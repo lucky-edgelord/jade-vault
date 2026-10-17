@@ -10,7 +10,7 @@ const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
 const NM = (process.env.JV_NODE_MODULES || path.join(ROOT, 'node_modules')) + '/';
 const WEB = path.join(ROOT, 'dist', 'jade-vault.html');
 const APK = path.join(ROOT, 'android', 'proj', 'assets', 'index.html');
-const ALL = ['sq_glue_test', 'sq_bridge_test', 'sq_shim_test', 'vault_test', 'vault_apk_test', 'py_test', 'sqlite_test', 'mcp_test', 'hb_test', 'prov_test', 'ctx_test', 'memrag_test', 'api_test', 'api_java_test', 'flows_test', 'bridge_test', 'tpl_test', 'reply_test', 'tf_test', 'tf_gpu_test', 'traj_test', 'apps_test', 'jadelink_test', 'vector_test', 'aicord_test', 'discord_test'];
+const ALL = ['sq_glue_test', 'sq_bridge_test', 'sq_shim_test', 'vault_test', 'vault_apk_test', 'py_test', 'sqlite_test', 'mcp_test', 'hb_test', 'prov_test', 'ctx_test', 'memrag_test', 'api_test', 'api_java_test', 'flows_test', 'bridge_test', 'tpl_test', 'reply_test', 'tf_test', 'tf_gpu_test', 'traj_test', 'apps_test', 'jadelink_test', 'vector_test', 'aicord_test', 'discord_test', 'jaded_test', 'native_test'];
 const pick = process.argv.slice(2).map(a => a.replace(/\.(mjs|py)$/, ''));
 const suites = pick.length ? ALL.filter(s => pick.includes(s)) : ALL;
 

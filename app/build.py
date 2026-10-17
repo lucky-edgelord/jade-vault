@@ -1364,6 +1364,10 @@ rep("<b>/vector</b> bot settings ·", "<b>/vector</b> bot settings · <b>/discor
 rep("window.__vecSync?.();", "window.__vecSync?.(); window.__dcSync?.();")
 rep("'secrets', 'vecToken', 'aicKey'];", "'secrets', 'vecToken', 'aicKey', 'dcToken'];")
 rep("Object.assign(window, { tfjsSource,", "Object.assign(window, { DC, dcInviteUrl, dcConnect, dcStop, dcIncoming, dcPoll, dcCall, dcWake, dcScope, dcFilterTools, discordTool, dcInboxAdd, DC_INBOX, tfjsSource,")
+
+# ---------- v22: native host (jaded): the vault is the machine's real filesystem and the shell is its real sh ----------
+rep('const vfs = new VFS();', rd('native_vfs.js') + '\nconst vfs = JADED ? new NativeVFS() : new VFS();')
+s = s.replace('/* =====================================================================\n   BOOT', rd('native_shell.js') + '\n/* =====================================================================\n   BOOT', 1)
 for bad in ['showPreview', 'schedulePreview', 'prevFrame', 'btnPrevBack', 'btnFilePreview', 'btnFileSave', 'inlineAssets']:
     if bad in s: print('WARN leftover', bad, s.count(bad))
 open(os.path.join(DIST, 'jade-vault.html'), 'w').write(s)
