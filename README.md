@@ -174,3 +174,14 @@ image to GHCR.
 See [SECURITY.md](SECURITY.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Jade Vault's code
 is MIT. BusyBox is GPL-2.0. Live2D Cubism Core is under Live2D's proprietary license. The Jade avatar
 model is not covered by the MIT license.
+
+## Native host (JadeOS-Linux)
+
+`native/jaded.mjs` is a zero-dependency Node daemon that serves the page and gives it the machine it runs on: the vault is a
+real folder (`JADED_ROOT`, default `~/jade`), the shell is the real `/bin/sh` (BusyBox on JadeOS-Linux) with real `node`,
+`micropython` and `sqlite3`, and no WebAssembly or browser copy is used. Jade's own commands (`jade`, `flow`, `crontab`,
+`search` …) work from that shell. It binds to 127.0.0.1 and every call needs a per-start token carried by the page it serves.
+
+    python3 app/build.py && JADED_PAGE=dist/jade-vault.html node native/jaded.mjs      # http://127.0.0.1:8080/
+
+Tests: `node tests/run.mjs jaded_test native_test`.

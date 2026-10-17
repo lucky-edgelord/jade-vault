@@ -76,6 +76,6 @@ const open = await page.evaluate(async () => { const a = await fetch('/exec', { 
 ok(open[0] === 401 && open[1] === 401, 'requests without the token are refused: ' + open);
 
 for (const l of log) console.log(l); for (const l of fail) console.log(l);
-console.log(`native: ${log.length} passed, ${fail.length} failed`); if (!fail.length) console.log("ALL PASS");
+console.log(`native: ${log.length} passed, ${fail.length} failed`); if (!fail.length) console.log('ALL PASS'); if (!fail.length) console.log("ALL PASS");
 await browser.close(); d.close(); fs.rmSync(root, { recursive: true, force: true });
 process.exit(fail.length ? 1 : 0);

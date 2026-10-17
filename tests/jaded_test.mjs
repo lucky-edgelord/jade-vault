@@ -94,5 +94,5 @@ e = await exec('jade tools'); ok(/page is not open/.test(e.err) && e.code !== 0,
 
 d.close(); fs.rmSync(root, { recursive: true, force: true }); fs.rmSync(page, { force: true });
 for (const l of log) console.log(l); for (const l of fail) console.log(l);
-console.log(`jaded: ${log.length} passed, ${fail.length} failed`); if (!fail.length) console.log("ALL PASS");
+console.log(`jaded: ${log.length} passed, ${fail.length} failed`); if (!fail.length) console.log('ALL PASS'); if (!fail.length) console.log("ALL PASS");
 process.exit(fail.length ? 1 : 0);
