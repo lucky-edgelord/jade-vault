@@ -222,7 +222,7 @@ async function resendFrom(i, text) {
   if (i === 0 && !cur._named) cur.title = text.slice(0, 60);
   cur.messages.push(content === text ? { role: 'user', content } : { role: 'user', content, display: text });
   saveSession(); renderChat(); try { renderSessions(); } catch {}
-  await agentLoop();
+  await agentLoop({ route: true });
 }
 chatEl.addEventListener('click', e => {
   const b = e.target.closest('[data-uact]'); if (!b) return; const el = b.closest('.msg-user'); const i = +el.dataset.i;

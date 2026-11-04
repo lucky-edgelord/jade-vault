@@ -27,7 +27,7 @@ const xavier = http.createServer((req, res) => {
     if (u === '/api/embed') { const b = JSON.parse(body); return j({ embeddings: b.input.map(embed) }); }
     if (u === '/api/tags') return j({ models: [{ name: 'nomic-embed-text' }, { name: 'laya' }] });
     if (u === '/v1/models') return j({ object: 'list', data: [{ id: 'gemma4-e2b-custom', object: 'model' }] });
-    if (u === '/v1/systemone') { seen.decide++; return j({ model: 'laya', answers: { q: { type: 'noul', noul: true, confidence: 0.93, probabilities: { true: 0.93, false: 0.07 } } } }); }
+    if (u === '/v1/systemone') { const q = JSON.parse(body).questions.q; if (q.type === 'choice') { seen.route = (seen.route || 0) + 1; const pick = /code/.test(JSON.parse(body).state) ? q.criteria[1] : q.criteria[0]; return j({ model: 'laya', answers: { q: { choice: pick, confidence: 0.8, probabilities: {} } } }); } seen.decide++; return j({ model: 'laya', answers: { q: { type: 'noul', noul: true, confidence: 0.93, probabilities: { true: 0.93, false: 0.07 } } } }); }
     if (u.startsWith('/v1/vision/')) { seen.vision++; return j({ ok: true, model: 'yolov8n', width: 640, height: 480, device: 'DLA0', ms: { total: 4.2 }, detections: [{ label: 'person', class_id: 0, confidence: 0.91, box: [10, 20, 110, 220] }], top: [{ label: 'tabby cat', class_id: 281, prob: 0.8 }] }); }
     if (u === '/v1/chat/completions') {
       const b = JSON.parse(body); seen.chats.push(b);
@@ -124,6 +124,12 @@ try {
   ok(await waitFor(a, () => !running && cur && cur.messages.at(-1)?.role === 'assistant' && /Fleet reply: hello fleet/.test(cur.messages.at(-1).content), null, 20000), 'a chat reply comes from the Xavier through the broker');
   const dec = await E(a, async () => (await decideData({ state: 'server on fire', question: 'Urgent?', type: 'yesno' })).result);
   ok(dec === true && seen.decide === 1, 'decisions go through the broker to Ollaya');
+  // the model router: laya (through the broker) picks the model for each message, the chat goes through the broker
+  await E(a, () => { Object.assign(S, { routerOn: true, routerModels: [{ prov: 'llamacpp', model: 'gemma4-e2b-custom', note: 'quick chat' }, { prov: 'llamacpp', model: 'big-coder', note: 'coding' }] }); saveSettings(); });
+  const c0 = seen.chats.length;
+  await a.fill('#input', 'write code please'); await E(a, () => document.querySelector('#btnSend').click());
+  ok(await waitFor(a, () => !running && /Fleet reply: write code/.test(cur.messages.at(-1)?.content || ''), null, 20000) && seen.chats.length === c0 + 1 && seen.chats.at(-1).model === 'big-coder' && seen.route === 1, 'the router picks the model through the broker: ' + seen.chats.at(-1)?.model);
+  await E(a, () => { S.routerOn = false; saveSettings(); });
   ok(seen.auth.every(x => x == null), 'the fleet token never reaches the Xavier');
 
   // --- the fleet's own tools

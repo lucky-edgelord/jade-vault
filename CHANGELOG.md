@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.23.0
+
+- **Model router.** Before each message you send, the decision model (laya, on Ollaya, Ollama 0.35+ or the fleet broker) reads it and picks which of your models answers: list them under Config → Decision models → Model router, one per line as `provider | model | what it is good at`. The choices can be on different providers (a local Ollama model for everyday chat, a Groq or OpenAI-compatible model for hard questions), each with its own key and address from Model provider. The pick holds for the whole turn, including its tool rounds, and a small line above the reply shows which model answered and how sure laya was. If the decision fails, is less sure than the threshold you set, or the picked model fails, the main model answers. "Test routing" tries a message without sending it. Only messages you send are routed; the heartbeat, curiosity, Vector and Discord turns keep their own model. It works the same in the browser page, the Jade Vault app and the Jade Fleet client.
+
 ## 2.22.1
 
 - **Fixed: `litert status` always said `webgpu: false`** on phones where LiteRT does run on WebGPU. It checked differently from `litert load`; both now use the same answer, so `status` and the `accelerator` a model loads with agree.

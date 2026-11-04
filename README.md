@@ -16,6 +16,7 @@ llama.cpp or any OpenAI-compatible endpoint. On the phone the network is native,
 - **Memory and steering:** long-term memory, a journal of past chats, and steering through SOUL.md, AGENTS.md and SYSTEM.md.
 - **Running on its own:** schedules in plain English (a prompt, a shell command or a flow), `crontab`, a heartbeat that works from HEARTBEAT.md, and a background mode on Android.
 - **Flows:** n8n-style automations in their own tab: steps of Jade's tools, JavaScript, shell commands, decisions (Ollaya or Ollama), AI answers and logic, started by hand, on a schedule, when a note changes, from the shell, from scripts or over the API.
+- **Model router:** before each message, the decision model (laya on Ollaya, Ollama 0.35+ or a fleet broker) picks which of your models answers it: a quick one for everyday chat, a strong one only when the message needs it (Config → Decision models → Model router).
 - **Scripting Jade:** `jade.tool()`, `jade.decide()`, `jade.ask()`, `jade.flow()` … in the shell's `node`, plus `jade` and `flow` shell commands.
 - **Note scripts & templates:** Obsidian-style ```` ```dataviewjs ```` blocks, inline `` `$= …` `` and Templater templates (`<% tp.date.now() %>`).
 - **Playbooks:** reusable, approved step lists that Jade can run from chat, a flow, a schedule or `crontab`; only unchanged, approved playbooks run unattended.

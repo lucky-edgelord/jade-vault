@@ -1,6 +1,6 @@
 {
   "name": "jade-vault",
-  "version": "2.22.1",
+  "version": "2.23.0",
   "private": true,
   "description": "Jade Vault: a mobile, Obsidian-style markdown vault with an AI agent (Jade) that runs in the browser and on Android.",
   "license": "MIT",

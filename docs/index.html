@@ -1845,6 +1845,16 @@ body[data-jade-theme="custom-gradient"] .jade-theme-label{background:var(--theme
         <div class="flex gap-2 items-center flex-wrap"><button class="btn btn-cy" id="btnOllayaTest">Run a test decision</button><span class="hint" id="ollayaNote"></span></div>
         <pre class="mono text-[11.5px] whitespace-pre-wrap border border-line p-2 text-[#cde3da]" id="ollayaResult" hidden></pre>
         <p class="hint leading-relaxed">Ollaya: install from ollaya.dev, run <span class="text-yl">ollaya serve</span> and pull a model (for example <span class="text-yl">ollaya pull laya</span>). Ollama: version 0.35 or newer serves decision models on the same API; pull one with <span class="text-yl">ollama pull</span> and leave the address blank to use the Ollama address above. Both accept requests from localhost and local files by default; for the hosted page, start them with <span class="text-yl">OLLAYA_ORIGINS="*"</span> or <span class="text-yl">OLLAMA_ORIGINS="*"</span>.</p>
+        <div class="pane-h" id="routerSection">Model router</div>
+        <p class="text-sm leading-relaxed text-[#c2d6ce]">Before each message you send, the decision model reads it and picks which of these models answers: a quick one for everyday chat, a strong one only when the message needs it. It uses the server and address above (laya through Ollaya, Ollama 0.35+ or the fleet broker), even when the decide tool is off. If it can't decide, or the model it picks can't be reached, the main model answers.</p>
+        <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+          <label class="flex items-center gap-2 text-sm" for="sRouterOn"><input type="checkbox" id="sRouterOn" class="accent-emerald-400 w-4 h-4"> Let the decision model pick the model for each message</label>
+          <div><label class="lbl" for="sRouterDecider">Routing decision model</label><input id="sRouterDecider" class="field mt-1" placeholder="laya"></div>
+          <div><label class="lbl" for="sRouterMin">Main model when less sure than (0–1)</label><input id="sRouterMin" type="number" min="0" max="1" step="0.05" class="field mt-1" placeholder="0"></div>
+        </div>
+        <div><label class="lbl" for="sRouterModels">Models, one per line: provider | model | what it is good at</label><textarea id="sRouterModels" rows="4" class="field mt-1 mono" placeholder="local | qwen3:8b | quick everyday chat, short answers, simple lookups&#10;groq | openai/gpt-oss-120b | coding, long documents, hard multi-step reasoning"></textarea>
+        <p class="hint">Providers: local (Ollama), cloud (Ollama Cloud), groq, llamacpp, openai (the OpenAI-compatible endpoint), aicord, each with its key and address from Model provider. Leave the provider out to use the main one.</p></div>
+        <div class="flex gap-2 items-center flex-wrap"><input id="sRouterTry" class="field" style="flex:1;min-width:200px" placeholder="A message to try (empty: a coding question)"><button class="btn btn-cy" id="btnRouterTest">Test routing</button><span class="hint" id="routerNote"></span></div>
       </section>
 
       <section data-tab="tools" class="flex flex-col gap-3">
@@ -5191,7 +5201,7 @@ async function send(text) {
   if (!cur.messages.length) { chatEl.innerHTML = ''; if (!cur._named) cur.title = (text || '📎 ' + ATT.pending.map(a => a.name).join(', ')).slice(0, 60); }
   if (Jade.ready) Jade.nod();
   const umsg = composeUserMessage(text, content === text ? '' : content); cur.messages.push(umsg); chatEl.appendChild(userBlock(umsg.display || umsg.content, cur.messages.length - 1)); scrollDown(true); saveSession();
-  await agentLoop();
+  await agentLoop({ route: true });
   if (queue.length) { const next = queue.splice(0).join('\n\n'); updateQueueNote(); await send(next); }
 }
 function updateQueueNote() { const n = $('#queueNote'); n.hidden = !queue.length; n.textContent = `QUEUED ▸ ${queue.length} message${queue.length > 1 ? 's' : ''} will be delivered after the current tool round`; }
@@ -5289,7 +5299,7 @@ async function compactHistory({ keepTurns = +S.compactKeep, reason = 'auto', mou
 }
 
 const PARALLEL_TOOLS = new Set(['web_search', 'web_fetch']);   // read-only network tools: safe to run together
-async function agentLoop() {
+async function agentLoop(opts = {}) {
   const triedProv = new Set();
   setRunning(true); abortReq = false; stick = true;
   let runError = null, lastContent = '';
@@ -5300,7 +5310,8 @@ async function agentLoop() {
     await compactHistory({ keepTurns: +S.compactKeep + 1, reason: 'auto' });
   }
   jadeMood('thinking'); jadeBubble('Thinking…');
-  const ai = aiBlock(); ai.querySelector('[data-model]').textContent = S.model; chatEl.appendChild(ai); const body = ai.querySelector('[data-body]');
+  const RT = opts.route ? await routeTurn() : null; let runModel = RT && !RT.error ? RT.model : S.model, runClient = RT && !RT.error ? RT.client : null;
+  const ai = aiBlock(); ai.querySelector('[data-model]').textContent = runModel; chatEl.appendChild(ai); const body = ai.querySelector('[data-body]'); if (RT) body.appendChild(routerTag(RT));
   const runT0 = Date.now(); setWhen(ai, runT0); const TR = trajRecorder(); const runStart = cur.messages.length;
   let turns = 0; let think = S.think; let needCtxCompact = false; let ctxRetry = 0; let fit = { est: 0, lim: ctxLimit() };
   try {
@@ -5317,12 +5328,12 @@ async function agentLoop() {
       const thinkD = thinkEl('', true); thinkD.hidden = true; body.appendChild(thinkD);
       const textEl = document.createElement('div'); body.appendChild(textEl);
       let raf = 0; const paint = () => { raf = 0; if (thinking) { thinkD.hidden = false; thinkD.querySelector('.think').textContent = thinking; } if (content) { const n = md(content, false); n.classList.add('caret'); textEl.replaceChildren(n); } scrollDown(); };
-      const req = { model: S.model, messages: apiMsgs, tools: toolsNow, stream: true, options: { temperature: +S.temperature, num_ctx: +S.numCtx } };
+      const req = { model: runModel, messages: apiMsgs, tools: toolsNow, stream: true, options: { temperature: +S.temperature, num_ctx: +S.numCtx } };
       if (think) req.think = true;
       TR.call(apiMsgs, toolsNow, req);
       const t0 = performance.now();
       try {
-        currentIter = await client.chat(req);
+        currentIter = await (runClient || client).chat(req);
         for await (const part of currentIter) {
           if (abortReq) break;
           const m = part.message || {};
@@ -5336,6 +5347,7 @@ async function agentLoop() {
         cancelAnimationFrame(raf);
         if (abortReq || e.name === 'AbortError') break;
         const msg = String(e.message || e);
+        if (runModel !== S.model || runClient) { thinkD.remove(); textEl.remove(); toast(`${esc(runModel)} (picked by the router) failed: ${esc(msg.slice(0, 120))}. Using ${esc(S.model)}.`); runModel = S.model; runClient = null; ai.querySelector('[data-model]').textContent = S.model; turns--; continue; }
         if (isCtxError(msg) && ctxRetry < 3) {
           ctxRetry++; ctxLearn(msg, fit.est); thinkD.remove(); textEl.remove(); jadeBubble('Too long for the model. Trimming and retrying…');
           toast(`${esc(S.model)} said the request was too long. Fitting it to ~${fmtK(ctxTarget(ctxLimit()))} tokens and retrying.`); turns--; continue;
@@ -5361,7 +5373,7 @@ async function agentLoop() {
       if (S.compactAuto && calls.length && ctxUsed > fit.lim * (+S.compactPct || 85) / 100) needCtxCompact = true;
       if (final) { $('#hudCtx').textContent = `~${fmtK(ctxUsed)} / ${fmtK(fit.lim)}`; if (final.eval_count && final.eval_duration) $('#hudTps').textContent = (final.eval_count / (final.eval_duration / 1e9)).toFixed(1) + ' tok/s'; }
       else $('#hudTps').textContent = (content.length / 4 / ((performance.now() - t0) / 1000)).toFixed(1) + ' tok/s~';
-      const asst = { role: 'assistant', content, model: S.model, ts: Date.now() }; if (thinking) asst.thinking = thinking; if (content.trim()) lastContent = content;
+      const asst = { role: 'assistant', content, model: runModel, ts: Date.now() }; if (thinking) asst.thinking = thinking; if (content.trim()) lastContent = content;
       if (calls.length) asst.tool_calls = calls.map(c => ({ function: { name: c.function?.name, arguments: typeof c.function?.arguments === 'string' ? safeJson(c.function.arguments) : (c.function?.arguments || {}) }, _id: uid() }));
       TR.reply(asst, final, fit.est); cur.messages.push(asst); saveSession();
       if (abortReq || !calls.length) break;
@@ -6595,7 +6607,7 @@ $('#btnDelAllChats').onclick = async () => {
   if (!delAllArmed) { delAllArmed = true; b.textContent = `Click again to delete ${sessions.length} chat${sessions.length > 1 ? 's' : ''}`; $('#resetNote').textContent = 'This cannot be undone.'; return; }
   delAllArmed = false; b.textContent = 'Delete all chats'; await deleteAllSessions(); $('#resetNote').textContent = 'All chats deleted.';
 };
-function openSettings() {
+function openSettings() { try { routerFill(); } catch {}
   renderSkillsSettings(); renderBgSettings(); renderApiSettings(); renderTplSettings(); initSettingsTabs(); renderTrajSettings(); window.__trajSync?.(); window.__vecSync?.(); window.__dcSync?.(); window.__diskSync?.();
   $('#sMemoryOn').checked = !!S.memoryOn; $('#sJournalOn').checked = !!S.journalOn; $('#sMemoryRag').checked = !!S.memoryRag; $('#sMemoryRagK').value = S.memoryRagK || 8;
   $('#sEmbedOn').checked = S.embedOn !== false; $('#sEmbedModel').value = S.embedModel || ''; $('#sEmbedHost').value = S.embedHost || ''; $('#sEmbedKey').value = S.embedKey || ''; $('#sEmbedNotes').checked = !!S.embedNotes;
@@ -7189,7 +7201,7 @@ async function resendFrom(i, text) {
   for (const k of ['attachments', 'images', '_attBlock']) if (oldMsg?.[k]) nm[k] = oldMsg[k];
   cur.messages.push(nm);
   saveSession(); renderChat(); try { renderSessions(); } catch {}
-  await agentLoop();
+  await agentLoop({ route: true });
 }
 chatEl.addEventListener('click', e => {
   const b = e.target.closest('[data-uact]'); if (!b) return; const el = b.closest('.msg-user'); const i = +el.dataset.i;
@@ -16173,6 +16185,96 @@ async function usbTool(a) {
 const USB_TOOL_DEFS = [{ name: 'usb', description: 'USB devices plugged into this phone (USB OTG) or computer: Arduinos and other microcontrollers, serial adapters, sensors, keys, custom devices. list: what is connected (ids, names, vendor:product, interfaces and endpoints). request: ask the user to allow one (optionally vendorId/productId in hex, or classCode); needed once per device. open/close; claim/release an interface (and select_alt). control_in/control_out: control transfers (requestType standard|class|vendor, recipient device|interface|endpoint|other, request, value, index; length for in, data for out). transfer_in/transfer_out: bulk or interrupt transfers on an endpoint number (length for in; data for out). data is hex bytes ("01 a0 ff"), an array of numbers, or text; answers show hex and printable text, and save writes received bytes to a vault file. device: its id, vendor:product, index or part of its name (optional when only one is allowed).',
   parameters: { type: 'object', properties: { action: { type: 'string', enum: ['list', 'request', 'open', 'close', 'claim', 'release', 'select_alt', 'control_in', 'control_out', 'transfer_in', 'transfer_out'] }, device: { type: 'string' }, vendorId: { type: 'string', description: 'hex, e.g. 2341' }, productId: { type: 'string' }, classCode: { type: 'number' }, interface: { type: 'number' }, alternate: { type: 'number' }, endpoint: { type: 'number' }, requestType: { type: 'string', enum: ['standard', 'class', 'vendor'] }, recipient: { type: 'string', enum: ['device', 'interface', 'endpoint', 'other'] }, request: { type: 'number' }, value: { type: 'number' }, index: { type: 'number' }, length: { type: 'number' }, data: { description: 'hex string or array of byte values' }, text: { type: 'string' }, timeout: { type: 'number', description: 'ms (default 5000)' }, save: { type: 'string', description: 'vault path for received bytes' } }, required: ['action'] } }];
 Object.assign(window, { usbTool, USB_TOOL_DEFS, JadeUSBDevice });
+
+/* =====================================================================
+   MODEL ROUTER (2.23): before each main-chat turn the decision model (laya on Ollaya, Ollama 0.35+ or the
+   fleet broker's /v1/systemone) reads the message and picks which listed model answers it. Each model has a
+   note saying what it is good at; laya chooses between the notes with calibrated probabilities. If the
+   decision fails, is unsure, or the picked model cannot be reached, the main model answers.
+   ===================================================================== */
+const ROUTER_Q = "Which model should answer the user's latest message? Each option describes what a model is good at. Pick the cheapest option that can answer this message well; pick a stronger one only when the message needs it.";
+const routerProvOf = x => { const k = String(x || '').trim().toLowerCase(); if (!k) return ''; if (PROVIDERS[k]) return k; if (k === 'ollama') return 'local'; return Object.keys(PROVIDERS).find(p => PROVIDERS[p].label.toLowerCase() === k) || ''; };
+function routerOpts(c = S) {
+  return (Array.isArray(c.routerModels) ? c.routerModels : []).filter(o => o && String(o.model || '').trim())
+    .map(o => ({ prov: routerProvOf(o.prov) || c.provider || 'local', model: String(o.model).trim(), note: String(o.note || '').trim() || String(o.model).trim() }));
+}
+const routerDecider = (c = S) => c.routerDecider || c.ollayaModel || '';
+const routerReady = (c = S) => !!(c.routerOn && routerDecider(c) && routerOpts(c).length >= 2);
+// "provider | model | note" per line ("model | note" uses the main provider; a # starts a comment)
+function routerParse(text) {
+  return String(text || '').split('\n').map(l => l.replace(/^\s*#.*$/, '').trim()).filter(Boolean).map(l => {
+    const p = l.split('|').map(x => x.trim());
+    if (p.length >= 3 || (p.length === 2 && routerProvOf(p[0]) && !/[:/]/.test(p[0]))) { const [prov, model, ...rest] = p; return { prov: routerProvOf(prov) || prov, model, note: rest.join(' | ') }; }
+    return { prov: '', model: p[0], note: p.slice(1).join(' | ') };
+  }).filter(o => o.model);
+}
+const routerFormat = list => (list || []).map(o => [o.prov, o.model, o.note].map(x => x || '').join(' | ').replace(/^ \| /, '')).join('\n');
+function routerState(msgs) {
+  const users = msgs.map((m, i) => [m, i]).filter(([m]) => m.role === 'user' && !m._auto && !m.auto);
+  if (!users.length) return '';
+  const [last, i] = users[users.length - 1];
+  const txt = m => typeof m.content === 'string' ? m.content : JSON.stringify(m.content || '');
+  const prev = msgs.slice(0, i).reverse().find(m => m.role === 'assistant' && m.content);
+  const s = (prev ? `Previous reply (end): ${txt(prev).slice(-600)}\n\n` : '') + `Latest message: ${txt(last)}`;
+  return s.slice(-4000);
+}
+async function routerAsk(state, c = S) {
+  const opts = routerOpts(c); const t0 = performance.now();
+  const body = { model: routerDecider(c), state, questions: { q: { type: 'choice', instructions: ROUTER_Q, criteria: opts.map(o => o.note) } } };
+  const r = await withTimeout(ollayaFetch('/v1/systemone', { method: 'POST', body: JSON.stringify(body) }), 15000, decName());
+  if (!r.ok) throw new Error(await ollayaErr(r));
+  const a = (await r.json()).answers?.q; if (!a) throw new Error(`${decName()} returned no answer`);
+  const ch = a.choice; let idx = typeof ch === 'number' || /^\d+$/.test(String(ch)) ? +ch : opts.findIndex(o => o.note === ch);
+  if (!(idx >= 0 && idx < opts.length)) throw new Error(`${decName()} answered ${JSON.stringify(ch)}`);
+  const conf = a.confidence != null ? +a.confidence : null;
+  return { ...opts[idx], conf, ms: Math.round(performance.now() - t0) };
+}
+// the model for this turn: { prov, model, note, conf, client } (client null: the active one), { error } (main model), or null (router off)
+async function routeTurn() {
+  if (!routerReady() || !cur) return null;
+  const t0 = performance.now();
+  try {
+    const pick = await routerAsk(routerState(cur.messages));
+    if (pick.conf != null && pick.conf < (+S.routerMin || 0)) return { error: `unsure (${Math.round(pick.conf * 100)}%)`, ms: pick.ms };
+    const miss = providerMissing(pick.prov); if (miss) throw new Error(`${pick.model}: ${miss}`);
+    const same = pick.prov === activeProv;
+    if (same && pick.model === S.model) return { ...pick, client: null, main: true };
+    return { ...pick, client: same ? null : makeClientFor(pick.prov) };
+  } catch (e) { return { error: String(e.message || e), ms: Math.round(performance.now() - t0) }; }
+}
+function routerTag(RT) {
+  const d = document.createElement('div'); d.className = 'hud router-tag'; d.style.cssText = 'opacity:.7;font-size:11px;margin:0 0 4px';
+  d.textContent = RT.error ? `↳ main model (router: ${RT.error})` : `↳ ${RT.prov === (S.provider || 'local') ? '' : PROVIDERS[RT.prov].label + ' · '}${RT.model}${RT.conf != null ? ` · ${Math.round(RT.conf * 100)}%` : ''}`;
+  d.title = RT.error ? 'The decision model could not pick, so the main model answers.' : `Picked for: ${RT.note}`;
+  return d;
+}
+// Config → Decision models → Model router
+function routerFill() {
+  const on = $('#sRouterOn'); if (!on) return;
+  on.checked = !!S.routerOn; $('#sRouterModels').value = routerFormat(S.routerModels); $('#sRouterDecider').value = S.routerDecider || ''; $('#sRouterMin').value = S.routerMin ?? 0;
+  $('#sRouterDecider').placeholder = S.ollayaModel ? `${S.ollayaModel} (the decision model above)` : 'laya';
+}
+function routerSave() {
+  Object.assign(S, { routerOn: $('#sRouterOn').checked, routerModels: routerParse($('#sRouterModels').value), routerDecider: $('#sRouterDecider').value.trim(), routerMin: Math.max(0, Math.min(1, +$('#sRouterMin').value || 0)) });
+  saveSettings();
+  const n = routerOpts().length, note = $('#routerNote');
+  if (note) note.textContent = S.routerOn ? (n < 2 ? 'List at least two models.' : !routerDecider() ? 'Pick a decision model above (for example laya).' : `${n} models; ${routerDecider()} picks one for each message.`) : '';
+}
+function routerWire() {
+  if (!$('#sRouterOn')) return;
+  ['sRouterOn', 'sRouterModels', 'sRouterDecider', 'sRouterMin'].forEach(id => $('#' + id).addEventListener('change', routerSave));
+  $('#btnRouterTest').onclick = async () => {
+    routerSave(); const note = $('#routerNote'); const msg = $('#sRouterTry').value.trim() || 'Write a Rust function that parses RFC 3339 timestamps, with tests.';
+    if (routerOpts().length < 2) return note.textContent = 'List at least two models first.';
+    if (!routerDecider()) return note.textContent = 'Pick a decision model first.';
+    note.textContent = 'Asking ' + routerDecider() + '…';
+    try { const p = await routerAsk(`Latest message: ${msg}`); note.textContent = `→ ${PROVIDERS[p.prov]?.label || p.prov} · ${p.model}${p.conf != null ? ` (${Math.round(p.conf * 100)}% sure)` : ''} · ${p.ms} ms`; }
+    catch (e) { note.textContent = 'Failed: ' + e.message; }
+  };
+  routerFill();
+}
+routerWire();
+Object.assign(window, { routeTurn, routerAsk, routerOpts, routerParse, routerFill, agentLoop });
 
 /* =====================================================================
    BOOT

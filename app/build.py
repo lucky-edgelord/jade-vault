@@ -1943,6 +1943,31 @@ rep("...DC_TOOL_DEFS.map(f => ({ type: 'function', function: f })), ...WORLD_TOO
 rep("    case 'senses': case 'look': case 'litert': case 'onnx': case 'browser':", "    case 'usb': return await usbTool(args);\n    case 'senses': case 'look': case 'litert': case 'onnx': case 'browser':")
 rep("onnx: run .onnx models with ONNX Runtime (WebGPU, or the CPU);", "onnx: run .onnx models with ONNX Runtime (WebGPU, or the CPU); usb: USB devices plugged into the phone (OTG) or the computer: list, ask the user to allow one, open, claim, control and bulk transfers;")
 rep("  onnx: 'onnx model", "  usb: 'usb device otg plugged arduino microcontroller serial adapter dongle port firmware endpoint',\n  onnx: 'onnx model")
+# ---------- 2.23: the model router (laya picks the model for each main-chat turn) ----------
+rep("""ollama pull</span> and leave the address blank to use the Ollama address above. Both accept requests from localhost and local files by default; for the hosted page, start them with <span class="text-yl">OLLAYA_ORIGINS="*"</span> or <span class="text-yl">OLLAMA_ORIGINS="*"</span>.</p>
+      </section>""", """ollama pull</span> and leave the address blank to use the Ollama address above. Both accept requests from localhost and local files by default; for the hosted page, start them with <span class="text-yl">OLLAYA_ORIGINS="*"</span> or <span class="text-yl">OLLAMA_ORIGINS="*"</span>.</p>
+        <div class="pane-h" id="routerSection">Model router</div>
+        <p class="text-sm leading-relaxed text-[#c2d6ce]">Before each message you send, the decision model reads it and picks which of these models answers: a quick one for everyday chat, a strong one only when the message needs it. It uses the server and address above (laya through Ollaya, Ollama 0.35+ or the fleet broker), even when the decide tool is off. If it can't decide, or the model it picks can't be reached, the main model answers.</p>
+        <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+          <label class="flex items-center gap-2 text-sm" for="sRouterOn"><input type="checkbox" id="sRouterOn" class="accent-emerald-400 w-4 h-4"> Let the decision model pick the model for each message</label>
+          <div><label class="lbl" for="sRouterDecider">Routing decision model</label><input id="sRouterDecider" class="field mt-1" placeholder="laya"></div>
+          <div><label class="lbl" for="sRouterMin">Main model when less sure than (0–1)</label><input id="sRouterMin" type="number" min="0" max="1" step="0.05" class="field mt-1" placeholder="0"></div>
+        </div>
+        <div><label class="lbl" for="sRouterModels">Models, one per line: provider | model | what it is good at</label><textarea id="sRouterModels" rows="4" class="field mt-1 mono" placeholder="local | qwen3:8b | quick everyday chat, short answers, simple lookups&#10;groq | openai/gpt-oss-120b | coding, long documents, hard multi-step reasoning"></textarea>
+        <p class="hint">Providers: local (Ollama), cloud (Ollama Cloud), groq, llamacpp, openai (the OpenAI-compatible endpoint), aicord, each with its key and address from Model provider. Leave the provider out to use the main one.</p></div>
+        <div class="flex gap-2 items-center flex-wrap"><input id="sRouterTry" class="field" style="flex:1;min-width:200px" placeholder="A message to try (empty: a coding question)"><button class="btn btn-cy" id="btnRouterTest">Test routing</button><span class="hint" id="routerNote"></span></div>
+      </section>""")
+s = s.replace('/* =====================================================================\n   BOOT', rd('model_router.js') + '\n/* =====================================================================\n   BOOT', 1)
+rep("function openSettings() {", "function openSettings() { try { routerFill(); } catch {}")
+rep("async function agentLoop() {\n  const triedProv = new Set();", "async function agentLoop(opts = {}) {\n  const triedProv = new Set();")
+rep("  const ai = aiBlock(); ai.querySelector('[data-model]').textContent = S.model; chatEl.appendChild(ai); const body = ai.querySelector('[data-body]');",
+    "  const RT = opts.route ? await routeTurn() : null; let runModel = RT && !RT.error ? RT.model : S.model, runClient = RT && !RT.error ? RT.client : null;\n  const ai = aiBlock(); ai.querySelector('[data-model]').textContent = runModel; chatEl.appendChild(ai); const body = ai.querySelector('[data-body]'); if (RT) body.appendChild(routerTag(RT));")
+rep("const req = { model: S.model, messages: apiMsgs, tools: toolsNow, stream: true,", "const req = { model: runModel, messages: apiMsgs, tools: toolsNow, stream: true,")
+rep("        currentIter = await client.chat(req);", "        currentIter = await (runClient || client).chat(req);")
+rep("        const msg = String(e.message || e);\n        if (isCtxError(msg) && ctxRetry < 3) {",
+    "        const msg = String(e.message || e);\n        if (runModel !== S.model || runClient) { thinkD.remove(); textEl.remove(); toast(`${esc(runModel)} (picked by the router) failed: ${esc(msg.slice(0, 120))}. Using ${esc(S.model)}.`); runModel = S.model; runClient = null; ai.querySelector('[data-model]').textContent = S.model; turns--; continue; }\n        if (isCtxError(msg) && ctxRetry < 3) {")
+rep("const asst = { role: 'assistant', content, model: S.model, ts: Date.now() };", "const asst = { role: 'assistant', content, model: runModel, ts: Date.now() };")
+rep("  await agentLoop();\n  if (queue.length) { const next = queue.splice(0).join('\\n\\n'); updateQueueNote(); await send(next); }", "  await agentLoop({ route: true });\n  if (queue.length) { const next = queue.splice(0).join('\\n\\n'); updateQueueNote(); await send(next); }")
 # the xterm instance itself, for the Fleet client's real terminal and for reading the whole scrollback
 rep('return { write: s => t.write(s), clear: () => t.clear(), onData: f => t.onData(f), fit: doFit, focus: () => t.focus() };', 'return { write: s => t.write(s), clear: () => t.clear(), onData: f => t.onData(f), fit: doFit, focus: () => t.focus(), _t: t };')
 for bad in ['showPreview', 'schedulePreview', 'prevFrame', 'btnPrevBack', 'btnFilePreview', 'btnFileSave', 'inlineAssets']:
