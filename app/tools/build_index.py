@@ -48,6 +48,10 @@ import shutil
 os.makedirs(os.path.join(ROOT, 'android', 'proj', 'assets', 'ort'), exist_ok=True)
 for f in os.listdir(os.path.join(V, 'ort')):
     shutil.copyfile(os.path.join(V, 'ort', f), os.path.join(ROOT, 'android', 'proj', 'assets', 'ort', f))
+# LiteRT the same way: assets/litert/ (its WebAssembly runtime and the bundle the litert tool loads)
+os.makedirs(os.path.join(ROOT, 'android', 'proj', 'assets', 'litert'), exist_ok=True)
+for f in os.listdir(os.path.join(V, 'litert')):
+    shutil.copyfile(os.path.join(V, 'litert', f), os.path.join(ROOT, 'android', 'proj', 'assets', 'litert', f))
 
 s = '<!doctype html>\n<html lang="en">\n' + s + '\n</html>\n'
 os.makedirs(os.path.join(ROOT, 'android', 'proj', 'assets'), exist_ok=True)

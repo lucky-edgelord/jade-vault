@@ -62,7 +62,8 @@ await page.selectOption('#sVecNotify', 'urgent');
 await page.evaluate(() => { const t = document.querySelector('#sVecPoll'); t.value = '2'; t.dispatchEvent(new Event('change')); });
 await page.check('#sVecOn'); await page.waitForTimeout(1500);
 ok(/Not connected/.test(await page.textContent('#vecStatus')) && /token/i.test(await page.textContent('#vecStatus')), 'wrong token is refused: ' + (await page.textContent('#vecStatus')).slice(0, 80));
-await page.fill('#sVecToken', TOKEN); await page.dispatchEvent('#sVecToken', 'change'); await page.waitForTimeout(1500);
+await page.fill('#sVecToken', TOKEN); await page.dispatchEvent('#sVecToken', 'change');
+await page.waitForFunction(() => /Online/.test(document.querySelector('#vecStatus')?.textContent || ''), null, { timeout: 20000 }).catch(() => {});   // CI machines are slower than a fixed pause
 ok(/Online/.test(await page.textContent('#vecStatus')) && /npub1jadebot/.test(await page.textContent('#vecStatus')), 'connects with the token, shows her npub');
 await page.evaluate(() => document.querySelector('#vecSection').scrollIntoView()); await page.screenshot({ path: 'vec_settings.png' });
 await page.evaluate(() => window.__androidBack());

@@ -52,12 +52,8 @@
 
 ## 2.18.3
 
-- **Faster replies: the tool list no longer changes between turns.** The tool router picked tools per message, and because the tool list is the start of the prompt, a list that changed every turn made the model re-read the whole conversation instead of reusing its prompt cache (slow on a phone, and on cloud models it cost cached tokens). A tool offered earlier in a chat now stays offered; the set only grows and keeps one fixed order. The page itself measures the same as 2.17 (startup, tabs, rendering, vault index).
-
-## 2.18.3
-
 - **Big vaults stay fast.** The link/tag index used to be rebuilt from every note after any write, so each chat turn that followed a write got slower the bigger the vault was (5,000 notes: about 160 ms per turn here, several times that on a phone). It now keeps what it parsed per note and re-reads only the notes that changed; link lookups are hash lookups and note names sort with a collator. After a write the system prompt now costs about 11 ms instead of 160 ms,; the cache holds only links, tags and word counts per note, never note text, so the vault stays on the phone's storage. Note search builds snippets only for the results it returns.
-- **The tool list no longer changes between turns.** The tool router picked tools per message, and the tool list is the start of the prompt, so a list that changed each turn made the model re-read the whole conversation instead of reusing its prompt cache. A tool offered earlier in a chat now stays offered: the set only grows, in one fixed order.
+- **Faster replies: the tool list no longer changes between turns.** The tool router picked tools per message, and because the tool list is the start of the prompt, a list that changed every turn made the model re-read the whole conversation instead of reusing its prompt cache (slow on a phone, and on cloud models it cost cached tokens). A tool offered earlier in a chat now stays offered; the set only grows and keeps one fixed order. The page itself measures the same as 2.17 (startup, tabs, rendering, vault index).
 
 ## 2.18.2
 
