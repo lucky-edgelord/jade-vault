@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.23.1
+
+- **Ratings in trajectory exports.** Config → Trajectory log has a new **Include ratings (👍/👎) and run info** switch: each exported line gets a `metadata` field with the reply's rating, the run's outcome, model, provider, source, start time and per-call token counts. A new filter, **Finished runs, 👎 too (for DPO / KTO)**, keeps thumbed-down runs in the file (errors still stay out). Together they turn your ratings into preference data: 👎 a reply, tap Retry, 👍 the better one, and the export holds a pair with the same prompt. Off by default, so existing exports are unchanged. [jade-tune](https://github.com/lucky-edgelord/jade-autotuner) trains on these files (SFT, DPO, KTO). [jade-py](https://github.com/lucky-edgelord/jade-py) 0.11 logs and exports the same way, so files from both train together.
+- **Fixed: Vector and Discord could show "Not connected" right after connecting.** When two connections started close together (changing the token while the start-up connection was still being made), the first one failed as the second one closed it, and its failure marked the new connection as not connected. A connection that has been replaced now leaves the newer one alone.
+- **LiteRT is in the repository.** Its runtime (`@litertjs/core` 2.5.3) was only on the machine that built the releases; it is now in `app/vendor/litert` and the build copies it into the app, so every build, CI's included, runs LiteRT offline on the phone.
+- The build also makes the Jade Docs app and the think-tool vault files (`npm run build`), and CI runs every test suite again: since `ubuntu-latest` moved to Ubuntu 26.04 it had stopped at installing the browser.
+
 ## 2.23.0
 
 - **Model router.** Before each message you send, the decision model (laya, on Ollaya, Ollama 0.35+ or the fleet broker) reads it and picks which of your models answers: list them under Config → Decision models → Model router, one per line as `provider | model | what it is good at`. The choices can be on different providers (a local Ollama model for everyday chat, a Groq or OpenAI-compatible model for hard questions), each with its own key and address from Model provider. The pick holds for the whole turn, including its tool rounds, and a small line above the reply shows which model answered and how sure laya was. If the decision fails, is less sure than the threshold you set, or the picked model fails, the main model answers. "Test routing" tries a message without sending it. Only messages you send are routed; the heartbeat, curiosity, Vector and Discord turns keep their own model. It works the same in the browser page, the Jade Vault app and the Jade Fleet client.
@@ -48,12 +55,8 @@
 
 ## 2.18.3
 
-- **Faster replies: the tool list no longer changes between turns.** The tool router picked tools per message, and because the tool list is the start of the prompt, a list that changed every turn made the model re-read the whole conversation instead of reusing its prompt cache (slow on a phone, and on cloud models it cost cached tokens). A tool offered earlier in a chat now stays offered; the set only grows and keeps one fixed order. The page itself measures the same as 2.17 (startup, tabs, rendering, vault index).
-
-## 2.18.3
-
 - **Big vaults stay fast.** The link/tag index used to be rebuilt from every note after any write, so each chat turn that followed a write got slower the bigger the vault was (5,000 notes: about 160 ms per turn here, several times that on a phone). It now keeps what it parsed per note and re-reads only the notes that changed; link lookups are hash lookups and note names sort with a collator. After a write the system prompt now costs about 11 ms instead of 160 ms,; the cache holds only links, tags and word counts per note, never note text, so the vault stays on the phone's storage. Note search builds snippets only for the results it returns.
-- **The tool list no longer changes between turns.** The tool router picked tools per message, and the tool list is the start of the prompt, so a list that changed each turn made the model re-read the whole conversation instead of reusing its prompt cache. A tool offered earlier in a chat now stays offered: the set only grows, in one fixed order.
+- **Faster replies: the tool list no longer changes between turns.** The tool router picked tools per message, and because the tool list is the start of the prompt, a list that changed every turn made the model re-read the whole conversation instead of reusing its prompt cache (slow on a phone, and on cloud models it cost cached tokens). A tool offered earlier in a chat now stays offered; the set only grows and keeps one fixed order. The page itself measures the same as 2.17 (startup, tabs, rendering, vault index).
 
 ## 2.18.2
 

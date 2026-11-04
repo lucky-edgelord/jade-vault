@@ -35,22 +35,30 @@ async function dcCall(name, args = {}, opts = {}) {
 }
 const dcJson = (t, d = null) => { try { return JSON.parse(t); } catch { return d; } };
 async function dcConnect() {
+  // as vecConnect: a superseded attempt (closed by a newer one) must not touch DC
+  const gen = DC.gen = (DC.gen || 0) + 1;
   dcStop();
   if (!S.dcUrl) { DC.error = 'no bridge URL'; renderDcSettings(); return false; }
-  DC.client = new McpHttpClient('discord', { url: S.dcUrl.trim(), headers: S.dcToken ? { Authorization: 'Bearer ' + S.dcToken.trim() } : {}, timeout: 90 });
+  const client = DC.client = new McpHttpClient('discord', { url: S.dcUrl.trim(), headers: S.dcToken ? { Authorization: 'Bearer ' + S.dcToken.trim() } : {}, timeout: 90 });
   try {
-    await DC.client.initialize();
+    await client.initialize();
+    if (gen !== DC.gen) return false;
     const st = dcJson(await dcCall('status'), {}) || {};
+    if (gen !== DC.gen) return false;
     DC.user = st.user || null; DC.warn = st.warn || '';
     if (!st.ready) { // the bridge is up but the bot is not online (yet): wait a little, then report why
-      for (let i = 0; i < 8 && !DC.user; i++) { await new Promise(r => setTimeout(r, 1000)); const s2 = dcJson(await dcCall('status').catch(() => '{}'), {}) || {}; if (s2.ready) { DC.user = s2.user; DC.warn = s2.warn || ''; st.ready = true; break; } if (s2.error) { st.error = s2.error; break; } }
+      for (let i = 0; i < 8 && !DC.user; i++) { await new Promise(r => setTimeout(r, 1000)); if (gen !== DC.gen) return false; const s2 = dcJson(await dcCall('status').catch(() => '{}'), {}) || {}; if (s2.ready) { DC.user = s2.user; DC.warn = s2.warn || ''; st.ready = true; break; } if (s2.error) { st.error = s2.error; break; } }
       if (!st.ready) throw new Error(st.error || 'the bridge is running but the bot is not online yet (check its log)');
     }
+    if (gen !== DC.gen) return false;
     DC.connected = true; DC.error = '';
     dcRefresh().catch(() => {});
     bgSync(); renderDcSettings(); dcSchedule(500);
     return true;
-  } catch (e) { DC.connected = false; DC.error = e.message; DC.client = null; renderDcSettings(); return false; }
+  } catch (e) {
+    if (gen !== DC.gen) return false;
+    DC.connected = false; DC.error = e.message; DC.client = null; renderDcSettings(); return false;
+  }
 }
 function dcStop() { clearTimeout(DC.timer); DC.timer = 0; DC.connected = false; try { DC.client?.close(); } catch {} DC.client = null; bgSync(); }
 function dcSchedule(ms) { clearTimeout(DC.timer); if (S.dcOn && DC.client) DC.timer = setTimeout(dcPoll, ms ?? Math.max(1, +S.dcPoll || 3) * 1000); }

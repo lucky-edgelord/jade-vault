@@ -11,3 +11,5 @@ python3 app/build.py
 node app/tools/twbuild.mjs dist/jade-vault.html dist/tw.css
 python3 app/tools/build_index.py
 python3 app/tools/build_fleet.py      # dist/jade-fleet.html: the Jade Fleet client (browser + APK)
+python3 scripts/build-think-vault.py  # dist/think-vault/ and .zip: the think tool as vault files
+python3 scripts/build-docs-app.py     # dist/jade-docs/ and .xdc: the Jade Docs app (reads dist/jade-vault.html)

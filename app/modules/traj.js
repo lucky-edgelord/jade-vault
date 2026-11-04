@@ -22,7 +22,8 @@ function setWhen(el, ts, extra) { const w = el?.querySelector?.('[data-when]'); 
    TRAJECTORY LOG — every agent run, exactly as the model saw it, for fine-tuning.
    Stored on this device only (IndexedDB "jade-traj"), never sent anywhere. Export as JSONL
    in OpenAI chat format (messages + tools, works with Unsloth / Axolotl / TRL / OpenAI) or
-   ShareGPT (LLaMA-Factory). Rate replies 👍 / 👎 in chat to filter the export.
+   ShareGPT (LLaMA-Factory). Rate replies 👍 / 👎 in chat to filter the export, or export the ratings
+   themselves (a "metadata" field per line) so 👍/👎 pairs can train with DPO / KTO.
    ===================================================================== */
 const TrajDB = (() => {
   let dbp;
@@ -105,11 +106,12 @@ function trajKeep(r, filter) {
   if (filter === 'all') return true;
   if (!r.steps?.length || !r.messages.some(m => m.role === 'assistant')) return false;
   if (r.outcome !== 'ok' && r.outcome !== 'segment') return false;
+  if (filter === 'prefs') return true;   // finished runs, 👎 too: for preference training (DPO / KTO) with ratings exported
   if (r.rating === -1) return false;
   if (filter === 'good') return r.rating === 1;
   return true;   // 'clean': finished runs, not thumbed down
 }
-async function exportTrajectories({ format = S.trajFormat || 'openai', filter = S.trajFilter || 'clean', thinking = !!S.trajThinking, meta = false } = {}) {
+async function exportTrajectories({ format = S.trajFormat || 'openai', filter = S.trajFilter || 'clean', thinking = !!S.trajThinking, meta = !!S.trajMeta } = {}) {
   const all = (await TrajDB.all()).sort((a, b) => a.started - b.started); const keep = all.filter(r => trajKeep(r, filter));
   if (!keep.length) { toast(all.length ? `None of the ${all.length} logged runs match that filter.` : 'Nothing logged yet: chat with Jade first.', 'err'); return null; }
   const line = r => { const o = format === 'sharegpt' ? trajToShareGPT(r, { thinking }) : trajToOpenAI(r, { thinking }); if (meta) o.metadata = { id: r.id, started: new Date(r.started).toISOString(), model: r.models?.join(',') || r.model, provider: r.provider, source: r.source, outcome: r.outcome, rating: r.rating, steps: r.steps }; return JSON.stringify(o); };
@@ -130,12 +132,13 @@ async function renderTrajSettings() {
 // settings wiring (changes apply at once)
 (() => {
   const on = $('#sTrajOn'); if (!on) return;
-  const sync = () => { on.checked = S.trajOn !== false; $('#sTrajFormat').value = S.trajFormat || 'openai'; $('#sTrajFilter').value = S.trajFilter || 'clean'; $('#sTrajThink').checked = !!S.trajThinking; $('#sStampOn').checked = S.stampOn !== false; };
+  const sync = () => { on.checked = S.trajOn !== false; $('#sTrajFormat').value = S.trajFormat || 'openai'; $('#sTrajFilter').value = S.trajFilter || 'clean'; $('#sTrajThink').checked = !!S.trajThinking; $('#sTrajMeta').checked = !!S.trajMeta; $('#sStampOn').checked = S.stampOn !== false; };
   sync();
   on.onchange = () => { S.trajOn = on.checked; saveSettings(); };
   $('#sTrajFormat').onchange = e => { S.trajFormat = e.target.value; saveSettings(); };
   $('#sTrajFilter').onchange = e => { S.trajFilter = e.target.value; saveSettings(); };
   $('#sTrajThink').onchange = e => { S.trajThinking = e.target.checked; saveSettings(); };
+  $('#sTrajMeta').onchange = e => { S.trajMeta = e.target.checked; saveSettings(); };
   $('#sStampOn').onchange = e => { S.stampOn = e.target.checked; saveSettings(); };
   $('#btnTrajExport').onclick = async () => { const r = await exportTrajectories(); if (r) toast(`Exported ${r.count} of ${r.of} runs (${fmtKB(r.bytes)})`, 'ok'); };
   let armed = false; $('#btnTrajClear').onclick = async e => { const b = e.currentTarget; if (!armed) { armed = true; b.textContent = 'Tap again to delete all'; setTimeout(() => { armed = false; b.textContent = 'Clear log'; }, 4000); return; } armed = false; b.textContent = 'Clear log'; await TrajDB.clear(); renderTrajSettings(); toast('Trajectory log cleared', 'ok'); };

@@ -1192,8 +1192,9 @@ TRAJ_HTML = """      <section class="flex flex-col gap-3" id="trajSection">
         <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
           <label class="flex items-center gap-2 text-sm" for="sTrajOn"><input type="checkbox" id="sTrajOn" class="accent-emerald-400 w-4 h-4"> Log trajectories</label>
           <label class="flex items-center gap-2 text-sm" for="sTrajThink"><input type="checkbox" id="sTrajThink" class="accent-emerald-400 w-4 h-4"> Include thinking</label>
+          <label class="flex items-center gap-2 text-sm" for="sTrajMeta" title="Adds a metadata field to each line with the 👍/👎 rating, outcome, model and time, for preference training (DPO / KTO)"><input type="checkbox" id="sTrajMeta" class="accent-emerald-400 w-4 h-4"> Include ratings (👍/👎) and run info</label>
           <div><label class="lbl" for="sTrajFormat">Export format</label><select id="sTrajFormat" class="field mt-1"><option value="openai">OpenAI chat: messages + tools (Unsloth, Axolotl, TRL)</option><option value="sharegpt">ShareGPT with tools (LLaMA-Factory)</option></select></div>
-          <div><label class="lbl" for="sTrajFilter">Which runs</label><select id="sTrajFilter" class="field mt-1"><option value="clean">Finished runs, minus 👎</option><option value="good">Only 👍 replies</option><option value="all">Everything (errors too)</option></select></div>
+          <div><label class="lbl" for="sTrajFilter">Which runs</label><select id="sTrajFilter" class="field mt-1"><option value="clean">Finished runs, minus 👎</option><option value="good">Only 👍 replies</option><option value="prefs">Finished runs, 👎 too (for DPO / KTO)</option><option value="all">Everything (errors too)</option></select></div>
         </div>
         <div class="mono text-xs text-dim" id="trajStats">…</div>
         <div class="flex gap-2 flex-wrap"><button type="button" class="btn btn-solid" id="btnTrajExport">Export JSONL</button><button type="button" class="btn btn-red" id="btnTrajClear">Clear log</button></div>

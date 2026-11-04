@@ -21,7 +21,11 @@ fetch https://github.com/pxb1988/dex2jar/releases/download/v2.4/dex-tools-v2.4.z
 [ -f "$T/dx.jar" ] || unzip -p "$T/dex-tools.zip" dex-tools-v2.4/lib/dx-30.0.2.jar > "$T/dx.jar"
 [ -f proj/assets/index.html ] || { echo "Build the web app first: scripts/build-web.sh"; exit 1; }
 # the Rust core (libjade.so); rebuilt when a Rust toolchain is here, else the built copies in proj/lib are used
-if command -v cargo >/dev/null && [ -d "$HOME/.cargo" ]; then ../rust/build-android.sh; fi
+# (a toolchain without the Android targets, like the one on GitHub's runners, uses the built copies too)
+if command -v cargo >/dev/null && [ -d "$HOME/.cargo" ] && command -v rustup >/dev/null \
+   && [ "$(rustup target list --installed 2>/dev/null | grep -cE '^(aarch64-linux-android|armv7-linux-androideabi|x86_64-linux-android)$')" = 3 ]; then
+  ../rust/build-android.sh
+fi
 [ -f proj/lib/arm64-v8a/libjade.so ] || { echo "Build the Rust core first: rust/build-android.sh"; exit 1; }
 
 rm -rf build && mkdir -p build/stubs build/classes build/out
