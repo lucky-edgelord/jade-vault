@@ -3,6 +3,8 @@
 const { start } = await import('./_harness.mjs');
 const { page, ok, model, read, done } = await start();
 const E = (fn, arg) => page.evaluate(fn, arg);
+// the vault-map skill is written shortly after start; let that happen before any wake is measured
+await page.waitForFunction(() => typeof vfs !== 'undefined' && vfs.isFile('/Jade/skills/vault-map/SKILL.md'), null, { timeout: 15000 });
 
 // ---------- engine ----------
 ok(await E(() => !S.curiosityOn && !activeTools().some(t => t.function.name === 'curiosity')), 'off by default, and the tool is not offered while it is off');
