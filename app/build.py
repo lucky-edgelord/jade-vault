@@ -1971,6 +1971,12 @@ rep("const asst = { role: 'assistant', content, model: S.model, ts: Date.now() }
 rep("  await agentLoop();\n  if (queue.length) { const next = queue.splice(0).join('\\n\\n'); updateQueueNote(); await send(next); }", "  await agentLoop({ route: true });\n  if (queue.length) { const next = queue.splice(0).join('\\n\\n'); updateQueueNote(); await send(next); }")
 # the xterm instance itself, for the Fleet client's real terminal and for reading the whole scrollback
 rep('return { write: s => t.write(s), clear: () => t.clear(), onData: f => t.onData(f), fit: doFit, focus: () => t.focus() };', 'return { write: s => t.write(s), clear: () => t.clear(), onData: f => t.onData(f), fit: doFit, focus: () => t.focus(), _t: t };')
+# ================= v2.24: Vault Loci, a built-in webxdc map of the vault, and the vault_map tool so Jade can walk it =================
+s = s.replace('/* =====================================================================\n   BOOT', rd('vault_map.js') + '\n/* =====================================================================\n   BOOT', 1)
+_vl = _b64.b64encode(open(os.path.join(DIST, 'vault-loci.xdc'), 'rb').read()).decode()
+_i = s.index('<script type="application/octet-stream" id="xdc-jadelink">'); _j = s.index('</script>', _i) + len('</script>')
+s = s[:_j] + '\n<script type="application/octet-stream" id="xdc-vaultloci">' + _vl + '</script>' + s[_j:]
+rep("    case 'more_tools': return moreToolsTool(args);", "    case 'more_tools': return moreToolsTool(args);\n    case 'vault_map': return await vaultMapTool(args);")
 for bad in ['showPreview', 'schedulePreview', 'prevFrame', 'btnPrevBack', 'btnFilePreview', 'btnFileSave', 'inlineAssets']:
     if bad in s: print('WARN leftover', bad, s.count(bad))
 open(os.path.join(DIST, 'jade-vault.html'), 'w').write(s)

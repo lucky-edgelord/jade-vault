@@ -88,9 +88,9 @@ ok(await page.evaluate(() => document.querySelector('#notePrev .image-file img')
 ok(/binary file .*cat\.png/.test(await page.evaluate(() => runTool('read', { path: '/attachments/images/cat.png' }))), 'read tool does not dump image bytes');
 // ============ WEBXDC ============
 await page.tap('.tab[data-tab="apps"]'); await page.waitForTimeout(300);
-await page.waitForFunction(() => XDC.apps.some(a => a.name === 'Jade Link'), null, { timeout: 10000 }); ok(await page.evaluate(() => document.querySelectorAll('.app-tile').length === 1), 'Apps tab in the bottom bar (Jade Link built in)');
+await page.waitForFunction(() => XDC.apps.some(a => a.name === 'Jade Link') && XDC.apps.some(a => a.name === 'Vault Loci') && document.querySelectorAll('.app-tile').length === 2, null, { timeout: 10000 }).catch(() => {}); ok(await page.evaluate(() => document.querySelectorAll('.app-tile').length === 2), 'Apps tab in the bottom bar (Jade Link and Vault Loci built in)');
 await page.setInputFiles('#xdcPick', { name: 'test-list.xdc', mimeType: 'application/octet-stream', buffer: fs.readFileSync('xdcfix/test-list.xdc') });
-await page.waitForFunction(() => document.querySelectorAll('.app-tile').length === 2, null, { timeout: 10000 });
+await page.waitForFunction(() => document.querySelectorAll('.app-tile').length === 3, null, { timeout: 10000 });
 ok(await page.evaluate(() => { const t = [...document.querySelectorAll('.app-tile')].find(x => /Test List/.test(x.textContent)); return /Test List/.test(t.textContent) && t.querySelector('img')?.src.startsWith('data:image/png'); }), 'installed from file: tile with name + icon');
 await page.screenshot({ path: 'apps_tab.png' });
 await page.click('.app-tile:has-text("Test List") .app-open'); await page.waitForSelector('#xdcOverlay iframe');

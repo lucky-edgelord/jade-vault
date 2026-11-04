@@ -56,6 +56,10 @@ addon-fit (MIT), Tailwind Play CDN 3.4 (MIT), ollama-js 0.6 (MIT), @pixi/unsafe-
 MicroPython 1.27 WebAssembly / PyScript build (MIT), pdf.js (Apache-2.0), Google Fonts
 Rajdhani, Chakra Petch, JetBrains Mono (SIL OFL 1.1).
 
+## Vault Loci app (`apps/vault-loci`)
+
+Silkscreen and JetBrains Mono (latin subsets, from `@fontsource` 5.3.0), SIL OFL 1.1, embedded so the app works offline.
+
 ## Jade Vector bridge
 
 | Component | License | Notes |

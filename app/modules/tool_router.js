@@ -30,6 +30,7 @@ const TR_HINTS = {
   backup: 'backup restore server export',
   http_request: 'http api request post put get rest json endpoint download webhook',
   jade_link: 'link board jade link',
+  vault_map: 'vault map loci locus palace memory palace avatar walk room place show around remember at where go',
 };
 const trHidden = () => cur?.toolsHidden || [];
 function trUsedNames() {

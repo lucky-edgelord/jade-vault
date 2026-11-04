@@ -68,7 +68,15 @@ async function xdcInstallFromVault(path) {
 async function xdcRefresh() { XDC.apps = (await XdcDB.apps()).sort((a, b) => (b.opened || b.installed) - (a.opened || a.installed)); renderApps(); return XDC.apps; }
 const xdcFind = (q) => { const s = String(q || '').toLowerCase().trim(); return XDC.apps.find(a => a.id === q) || XDC.apps.find(a => a.name.toLowerCase() === s) || XDC.apps.find(a => a.name.toLowerCase().includes(s)) || null; };
 // ---- updates ----
-async function xdcSendUpdate(app, update, who) {
+// one send at a time per app: each send reads the app's serial and writes serial + 1, so two at once (the app and Jade,
+// or an app sending twice in a row) used to get the same serial and the second overwrote the first in the store
+const XSEND = new Map();
+function xdcSendUpdate(app, update, who) {
+  const run = (XSEND.get(app.id) || Promise.resolve()).then(() => xdcSendUpdateNow(app, update, who));
+  XSEND.set(app.id, run.catch(() => {}));
+  return run;
+}
+async function xdcSendUpdateNow(app, update, who) {
   if (!update || typeof update !== 'object' || !('payload' in update)) throw new Error('an update needs a payload');
   const json = JSON.stringify(update.payload); if (json === undefined) throw new Error('payload must be JSON');
   if (json.length > 128000) throw new Error('update payload is over 128 KB');

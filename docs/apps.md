@@ -48,6 +48,12 @@ Card operations can also be standalone updates:
 
 Operations are `add`, `move`, `edit`, and `del`; columns are `todo`, `doing`, and `done`. Sender identity comes from the host update rather than an arbitrary payload `from` field. Text supports bold, italic, code, and line breaks. See the [existing protocol reference](../apps/jade-link/README.md) for details.
 
+## Vault Loci
+
+Vault Loci is the built-in map of the vault: a lit, top-down room with eleven places (loci) used as a memory palace. You and Jade share one avatar. You walk it with the D-pad, WASD or arrow keys, a gamepad, or a tap on the floor; Jade walks it with the `vault_map` tool (look, goto, open, close, say, move, stop, light, remember, recall, forget). Your input always wins over a walk Jade is making.
+
+The Chat button (or T) opens a chat box: your message wakes Jade in the app's own chat, and her answer appears in the box and as a speech bubble. The app knows only what happens on the map. Its memories are separate from Jade's memory tool and are plain text, so never pin passwords or private data. The `vault-map` skill in `/Jade/skills` tells Jade how to use it. Protocol: [apps/vault-loci/README.md](../apps/vault-loci/README.md).
+
 ## Create and package an app
 
 On your development computer:
