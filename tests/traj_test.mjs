@@ -80,11 +80,29 @@ await page.evaluate(() => openSettings()); await page.waitForTimeout(500);
 const st = await page.textContent('#trajStats');
 ok(/3 runs · 4 model calls/.test(st) && /👍 1 · 👎 1 · 1 errors/.test(st), 'settings show log stats: ' + st);
 await page.evaluate(() => document.querySelector('#trajSection').scrollIntoView()); await page.screenshot({ path: 'traj_settings.png' });
+// ratings in the export (for DPO / KTO): 👎 a reply, Retry, 👍 the new one -> a pair with the same prompt
+ok(!('metadata' in JSON.parse((await page.evaluate(() => exportTrajectories({ filter: 'all' }))).text.split('\n')[0])), 'no ratings in the export by default');
+await page.evaluate(() => { const t = document.querySelector('#sTrajMeta'); t.checked = true; t.dispatchEvent(new Event('change')); const f = document.querySelector('#sTrajFilter'); f.value = 'prefs'; f.dispatchEvent(new Event('change')); });
+ok(await page.evaluate(() => S.trajMeta === true && S.trajFilter === 'prefs' && JSON.parse(localStorage.getItem('jvault:settings')).trajMeta === true), '"Include ratings" and the 👎-too filter are saved');
+await page.evaluate(() => document.querySelector('#btnCloseSettings, [data-close-settings]')?.click());
+await page.evaluate(() => newSession()); await send('rate me');
+await page.evaluate(() => [...document.querySelectorAll('.msg-ai [data-rate="-1"]')].at(-1).click()); await page.waitForTimeout(300);
+const nRetry = await page.evaluate(() => cur.messages.length);
+await page.evaluate(() => [...document.querySelectorAll('.reply-bar [data-ract="retry"]')].filter(b => !b.hidden).at(-1).click());
+await page.waitForFunction(n => !running && cur.messages.length >= n, nRetry, { timeout: 30000 }); await page.waitForTimeout(500);
+await page.evaluate(() => [...document.querySelectorAll('.msg-ai [data-rate="1"]')].at(-1).click()); await page.waitForTimeout(300);
+const pref = await page.evaluate(() => exportTrajectories().then(r => r.text.trim().split('\n').map(l => JSON.parse(l))));
+const rateMe = pref.filter(o => o.messages.some(m => m.role === 'user' && /rate me$/.test(m.content)));
+const promptOf = o => JSON.stringify(o.messages.slice(0, -1).map(m => [m.role, m.content, (m.tool_calls || []).map(t => t.function)]));   // tool-call ids differ per run
+ok(pref.every(o => o.metadata && 'rating' in o.metadata && o.metadata.outcome !== 'error'), 'with ratings on, every line has metadata (rating, outcome) and errors stay out: ' + pref.length);
+ok(rateMe.length === 2 && JSON.stringify(rateMe.map(o => o.metadata.rating).sort()) === '[-1,1]' && promptOf(rateMe[0]) === promptOf(rateMe[1]), '👎 + Retry + 👍 exports a pair with the same prompt: ' + JSON.stringify(rateMe.map(o => o.metadata.rating)));
+ok(pref.some(o => o.metadata.rating === -1) && (await page.evaluate(() => exportTrajectories({ filter: 'clean' }))).text.trim().split('\n').every(l => JSON.parse(l).metadata.rating !== -1), '"👎 too" keeps 👎 runs, "minus 👎" still drops them');
+await page.evaluate(() => openSettings()); await page.waitForTimeout(300);
 // switches
 await page.evaluate(() => { const t = document.querySelector('#sTrajOn'); t.checked = false; t.dispatchEvent(new Event('change')); const s2 = document.querySelector('#sStampOn'); s2.checked = false; s2.dispatchEvent(new Event('change')); });
 await page.evaluate(() => document.querySelector('#btnCloseSettings, [data-close-settings]')?.click());
 seen.length = 0; await page.evaluate(() => newSession()); await send('no log now');
-ok((await page.evaluate(() => TrajDB.count())) === 3, 'logging can be turned off');
+ok((await page.evaluate(() => TrajDB.count())) === 5, 'logging can be turned off');
 ok(seen[0].messages.find(m => m.role === 'user').content === 'no log now' && !/Each user message starts with the time/.test(seen[0].messages[0].content), 'stamps can be turned off');
 ok(await page.evaluate(() => JSON.parse(localStorage.getItem('jvault:settings')).trajOn === false), 'switch saved');
 console.log(log.join('\n')); console.log('\n' + (fail.length ? fail.join('\n') : 'ALL PASS'));
