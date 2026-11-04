@@ -64,7 +64,12 @@ await page.check('#sVecOn'); await page.waitForTimeout(1500);
 ok(/Not connected/.test(await page.textContent('#vecStatus')) && /token/i.test(await page.textContent('#vecStatus')), 'wrong token is refused: ' + (await page.textContent('#vecStatus')).slice(0, 80));
 await page.fill('#sVecToken', TOKEN); await page.dispatchEvent('#sVecToken', 'change');
 await page.waitForFunction(() => /Online/.test(document.querySelector('#vecStatus')?.textContent || ''), null, { timeout: 20000 }).catch(() => {});   // CI machines are slower than a fixed pause
-ok(/Online/.test(await page.textContent('#vecStatus')) && /npub1jadebot/.test(await page.textContent('#vecStatus')), 'connects with the token, shows her npub');
+ok(/Online/.test(await page.textContent('#vecStatus')) && /npub1jadebot/.test(await page.textContent('#vecStatus')), 'connects with the token, shows her npub: ' + (await page.textContent('#vecStatus')).slice(0, 120));
+// two connects at once (the start-up connect, a token change): the first fails when the second closes it, and must
+// not mark the second as not connected
+ok(await page.evaluate(async () => { const [ra, rb] = await Promise.all([vecConnect(), vecConnect()]); return !ra && rb && VEC.connected && !!VEC.client; }), 'a superseded connect does not undo the newer one');
+await page.waitForTimeout(300);
+ok(/Online/.test(await page.textContent('#vecStatus')), 'still online after two connects at once: ' + (await page.textContent('#vecStatus')).slice(0, 80));
 await page.evaluate(() => document.querySelector('#vecSection').scrollIntoView()); await page.screenshot({ path: 'vec_settings.png' });
 await page.evaluate(() => window.__androidBack());
 // main chat to return to

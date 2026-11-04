@@ -1,8 +1,11 @@
 # Changelog
 
-## Unreleased
+## 2.23.1
 
-- **Ratings in trajectory exports.** Config → Trajectory log has a new **Include ratings (👍/👎) and run info** switch: each exported line gets a `metadata` field with the reply's rating, the run's outcome, model, provider, source, start time and per-call token counts. A new filter, **Finished runs, 👎 too (for DPO / KTO)**, keeps thumbed-down runs in the file (errors still stay out). Together they turn your ratings into preference data: 👎 a reply, tap Retry, 👍 the better one, and the export holds a pair with the same prompt. Off by default, so existing exports are unchanged. [jade-tune](https://github.com/lucky-edgelord/jade-autotuner) trains on these files (SFT, DPO, KTO).
+- **Ratings in trajectory exports.** Config → Trajectory log has a new **Include ratings (👍/👎) and run info** switch: each exported line gets a `metadata` field with the reply's rating, the run's outcome, model, provider, source, start time and per-call token counts. A new filter, **Finished runs, 👎 too (for DPO / KTO)**, keeps thumbed-down runs in the file (errors still stay out). Together they turn your ratings into preference data: 👎 a reply, tap Retry, 👍 the better one, and the export holds a pair with the same prompt. Off by default, so existing exports are unchanged. [jade-tune](https://github.com/lucky-edgelord/jade-autotuner) trains on these files (SFT, DPO, KTO). [jade-py](https://github.com/lucky-edgelord/jade-py) 0.11 logs and exports the same way, so files from both train together.
+- **Fixed: Vector and Discord could show "Not connected" right after connecting.** When two connections started close together (changing the token while the start-up connection was still being made), the first one failed as the second one closed it, and its failure marked the new connection as not connected. A connection that has been replaced now leaves the newer one alone.
+- **LiteRT is in the repository.** Its runtime (`@litertjs/core` 2.5.3) was only on the machine that built the releases; it is now in `app/vendor/litert` and the build copies it into the app, so every build, CI's included, runs LiteRT offline on the phone.
+- The build also makes the Jade Docs app and the think-tool vault files (`npm run build`), and CI runs every test suite again: since `ubuntu-latest` moved to Ubuntu 26.04 it had stopped at installing the browser.
 
 ## 2.23.0
 
