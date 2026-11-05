@@ -1,0 +1,3 @@
+name = "Vault Loci"
+description = "A top-down memory palace of Jade's vault. Walk it, light it, text Jade, and let her walk it too."
+jade_reply = "msg"

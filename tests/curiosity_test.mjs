@@ -3,6 +3,8 @@
 const { start } = await import('./_harness.mjs');
 const { page, ok, model, read, done } = await start();
 const E = (fn, arg) => page.evaluate(fn, arg);
+// the vault-map skill is written shortly after start; let that happen before any wake is measured
+await page.waitForFunction(() => typeof vfs !== 'undefined' && vfs.isFile('/Jade/skills/vault-map/SKILL.md'), null, { timeout: 15000 });
 
 // ---------- engine ----------
 ok(await E(() => !S.curiosityOn && !activeTools().some(t => t.function.name === 'curiosity')), 'off by default, and the tool is not offered while it is off');
@@ -118,8 +120,9 @@ ok(menuOnly === 'rest', 'activities the user switched off are not on her menu');
 await E(() => { S.cuActsOff = []; S.cuCap = 1; ls.set('cuToday', { day: cuDay(), n: 1, notified: 0 }); ls.set('cuNext', 1); });
 const nBefore = await E(() => cuState().total);
 await E(() => runCuriosity());
-const capped = await E(() => ({ total: cuState().total, next: ls.get('cuNext') }));
-ok(capped.total === nBefore && capped.next > Date.now() + 3600e3, 'at the daily cap she does not wake, and the next wake is tomorrow');
+const capped = await E(() => { const d = new Date(); d.setHours(24, 0, 0, 0); return { total: cuState().total, next: ls.get('cuNext'), tomorrow: d.getTime() }; });
+// tomorrow, not "an hour from now": with active hours from 00:00 the next wake is just after midnight, which late in the evening is under an hour away
+ok(capped.total === nBefore && capped.next >= capped.tomorrow, 'at the daily cap she does not wake, and the next wake is tomorrow');
 await E(() => { S.curiosityOn = false; ls.set('cuNext', 1); });
 await E(() => cuTick()); await page.waitForTimeout(300);
 ok((await E(() => cuState().total)) === nBefore, 'switched off, nothing wakes her');
