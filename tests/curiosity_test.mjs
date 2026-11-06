@@ -107,7 +107,7 @@ ok(w.id === 'ask' && w.measured.created === 1 && w.self === null && /no report/.
 
 // invalid use
 model.chatReply = script([['curiosity', { action: 'choose', activity: 'world-domination' }], ['curiosity', { action: 'report' }]]);
-const toolOut = await E(async () => { await runCuriosity({ manual: true }); return ((await idb.get('session:' + ls.get('cuSession', ''))).messages).filter(m => m.role === 'tool' && m.tool_name === 'curiosity').map(m => m.content); });
+const toolOut = await E(async () => { await runCuriosity({ manual: true }); const sid = ls.get('cuSession', ''); return ((cur && cur.id === sid ? cur : await idb.get('session:' + sid)).messages).filter(m => m.role === 'tool' && m.tool_name === 'curiosity').map(m => m.content); });
 ok(toolOut.some(x => /choose one of: /.test(x)), 'choosing something that is not on the menu is refused: ' + JSON.stringify(toolOut));
 ok(/only available during a curiosity wake-up/.test(await E(() => { try { curiosityTool({ action: 'choose', activity: 'explore' }); return ''; } catch (e) { return e.message; } })), 'choose and report only work during a wake-up');
 const stat = await E(() => curiosityTool({ action: 'status' }));
