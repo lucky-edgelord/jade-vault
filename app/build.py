@@ -2018,6 +2018,69 @@ rep('[hidden]{display:none!important}', '[hidden]{display:none!important}\n' + "
 .kg-rules{min-height:300px;font-size:12.5px;line-height:1.5;width:100%}
 .kg-chk{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);cursor:pointer}
 .kg-cv{flex:1;min-height:360px;width:100%;touch-action:none;border:1px solid var(--line)}""")
+# ================= v2.26: autonomy (3-tier scheduler + autonomous mode), Plans (Gantt) and Jade Lisp =================
+_lisp_root = os.path.join(D, 'vault', 'lisp'); _lisp = {}
+for _dp, _dn, _fn in os.walk(_lisp_root):
+    for _f in sorted(_fn): _full = os.path.join(_dp, _f); _lisp['/Jade/' + os.path.relpath(_full, _lisp_root).replace(os.sep, '/')] = open(_full).read()
+_lisp_js = 'const LISP_SEED = ' + _json.dumps(_lisp, ensure_ascii=False).replace('</', '<\\/') + ';\n'
+s = s.replace('/* =====================================================================\n   BOOT', _lisp_js + rd('lisp_tool.js') + '\n' + rd('gantt.js') + '\n' + rd('sched.js') + '\n/* =====================================================================\n   BOOT', 1)
+rep("    case 'knowledge': return await knowledgeTool(args);", "    case 'knowledge': return await knowledgeTool(args);\n    case 'lisp': return await lispTool(args);\n    case 'gantt': return await ganttTool(args, 'jade');\n    case 'sched': return await schedTool(args);")
+rep("' + kgPromptExtra() + '. Build tools", "' + kgPromptExtra() + '; lisp: Jade Lisp, your own Lisp for DSLs and scripts that call any tool; sched: your 3-tier scheduler for autonomous work (goals worked on in slices); gantt: long-term project plans (Gantt charts). Build tools")
+rep("const navFor = { file: 'files', graph: 'files', kg: 'files' }[name] || name;", "const navFor = { file: 'files', graph: 'files', kg: 'files', gantt: 'files', auto: 'files' }[name] || name;")
+rep('<span class="badge" id="kgBadge" hidden>0</span></button>', '<span class="badge" id="kgBadge" hidden>0</span></button>\n        <button class="btn btn-ghost" id="btnPlans" title="Plans: Gantt charts for long-term projects">Plans</button>\n        <button class="btn btn-ghost" id="btnQueue" title="Queue: the scheduler and autonomous mode">Queue</button>')
+rep("    <!-- KNOWLEDGE -->", """    <!-- PLANS (Gantt) -->
+    <section class="m-screen" data-panel="gantt" hidden>
+      <div class="m-sub">
+        <button class="icon-btn" id="btnGanttBack" aria-label="Back" style="width:38px;height:38px"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <select class="field g-proj" id="ganttProj" aria-label="Project"></select>
+        <button class="btn" id="btnGanttNew" title="New project">+ Project</button>
+        <button class="btn" id="btnGanttPlan" title="Push tasks after their dependencies">Plan</button>
+      </div>
+      <div class="kg-views" id="ganttZoom" role="tablist"><button role="tab" data-z="day">Days</button><button role="tab" data-z="week">Weeks</button><button role="tab" data-z="month">Months</button></div>
+      <div class="kg-body" id="ganttBody"></div>
+    </section>
+
+    <!-- QUEUE (scheduler + autonomous mode) -->
+    <section class="m-screen" data-panel="auto" hidden>
+      <div class="m-sub">
+        <button class="icon-btn" id="btnAutoBack" aria-label="Back" style="width:38px;height:38px"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <span class="disp text-yl font-bold text-[14px] truncate flex-1 min-w-0">Queue</span>
+        <label class="kg-chk" title="Jade works through the queue on her own, within your limits"><input type="checkbox" id="autoOn"> Autonomous</label>
+        <button class="btn" id="btnAutoStop" title="Stop now and turn autonomous mode off">Stop</button>
+      </div>
+      <div class="kg-body" id="autoBody"></div>
+    </section>
+
+    <!-- KNOWLEDGE -->""")
+rep('[hidden]{display:none!important}', '[hidden]{display:none!important}\n' + """.g-proj{flex:1;min-width:0}
+.g-sum{font-size:12px;color:var(--dim)}
+.g-wrap{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);background:rgba(5,10,8,.6);-webkit-overflow-scrolling:touch}
+#ganttSvg{display:block;touch-action:pan-y;user-select:none}
+.g-grid{stroke:var(--line);stroke-width:1}.g-wkend{fill:rgba(255,255,255,.025)}
+.g-head{fill:var(--dim);font-size:10px;font-family:var(--f-mono,monospace)}.g-mon{fill:var(--fg)}
+.g-today{stroke:#ffc850;stroke-width:1.5;stroke-dasharray:4 3}.g-todayt{fill:#ffc850}
+.g-bar{fill:rgba(31,229,165,.25);stroke:rgba(31,229,165,.7);stroke-width:1;cursor:grab}
+.g-bar.done{fill:rgba(31,229,165,.12);stroke:rgba(31,229,165,.35)}.g-bar.blocked,.g-bar.waiting{fill:rgba(255,200,80,.18);stroke:rgba(255,200,80,.7)}
+.g-bar.late{fill:rgba(255,61,79,.2);stroke:rgba(255,61,79,.85)}.g-bar.planned{fill:rgba(120,160,150,.15);stroke:rgba(120,160,150,.6)}
+.g-bar.user{stroke-dasharray:3 2}.g-bar.crit{stroke-width:2.2}.g-bar.sel{stroke:#fff;stroke-width:2}
+.g-prog{fill:rgba(31,229,165,.55)}.g-ms{cursor:grab}
+.g-lab{fill:var(--fg);font-size:11px;pointer-events:none}
+.g-link{fill:none;stroke:rgba(180,200,195,.5);stroke-width:1.2}.g-link.crit{stroke:rgba(255,200,80,.85)}.g-arrowhead{fill:rgba(180,200,195,.7)}
+.g-form{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid var(--line)}
+.g-l{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--dim);flex:1;min-width:110px}
+.aq-status{padding:10px;border:1px solid var(--line);font-size:13px}.aq-status.on{border-color:rgba(31,229,165,.6)}
+.aq-bud{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--dim)}.aq-bud b{color:var(--fg)}
+.aq-strip{display:flex;gap:1px;height:12px;border:1px solid var(--line)}
+.aq-s{min-width:2px}.aq-s.t1{background:#ff6b7a}.aq-s.t2{background:#ffc850}.aq-s.t3{background:#1fe5a5}.aq-s.error,.aq-s.blocked{opacity:.4}
+.aq-tier{display:flex;flex-direction:column;gap:6px}.aq-n{color:var(--dim);font-size:11px}
+.aq-row{padding:8px;border:1px solid var(--line);display:flex;flex-direction:column;gap:3px}
+.aq-row.running{border-color:rgba(31,229,165,.8)}.aq-row.waiting,.aq-row.blocked{border-color:rgba(255,200,80,.7)}.aq-row.paused{opacity:.65}
+.aq-t{font-size:13px;word-break:break-word}.aq-id{font-family:var(--f-mono,monospace);color:var(--dim);font-size:11px}
+.aq-m{font-size:11px;color:var(--dim)}.aq-m.bad{color:#ff6b7a}
+.aq-need{font-size:12px;color:#ffc850;word-break:break-word}.aq-need code{font-size:11px}
+.aq-add,.aq-set{border:1px solid var(--line);padding:8px;display:flex;flex-direction:column;gap:8px}.aq-add summary,.aq-set summary{cursor:pointer}
+.aq-add[open],.aq-set[open]{gap:8px}.aq-add>*+*,.aq-set>*+*{margin-top:8px}
+.aq-log{font-size:12px;padding:4px 0;border-bottom:1px solid var(--line);word-break:break-word}.aq-log span{color:var(--dim);font-family:var(--f-mono,monospace)}""")
 for bad in ['showPreview', 'schedulePreview', 'prevFrame', 'btnPrevBack', 'btnFilePreview', 'btnFileSave', 'inlineAssets']:
     if bad in s: print('WARN leftover', bad, s.count(bad))
 open(os.path.join(DIST, 'jade-vault.html'), 'w').write(s)
