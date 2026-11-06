@@ -9,6 +9,16 @@ from a release in any modern browser. Point it at Ollama on your computer, or at
 llama.cpp or any OpenAI-compatible endpoint. On the phone the network is native, so Ollama needs no
 `OLLAMA_ORIGINS`: it only has to listen on an address the phone can reach.
 
+## Screenshots
+
+<table>
+  <tr><td align="center" valign="top" width="25%"><img src="docs/screenshots/chat.png" alt="Chat: Jade answers with her tools" width="200"><br><sub>Chat: Jade answers with her tools</sub></td><td align="center" valign="top" width="25%"><img src="docs/screenshots/note.png" alt="A note with links, tags and tasks" width="200"><br><sub>A note with links, tags and tasks</sub></td><td align="center" valign="top" width="25%"><img src="docs/screenshots/graph.png" alt="The vault graph" width="200"><br><sub>The vault graph</sub></td><td align="center" valign="top" width="25%"><img src="docs/screenshots/knowledge.png" alt="Knowledge graph: a proven answer and its proof" width="200"><br><sub>Knowledge graph: a proven answer and its proof</sub></td></tr>
+  <tr><td align="center" valign="top" width="25%"><img src="docs/screenshots/plans.png" alt="Plans: a Gantt chart with dependencies" width="200"><br><sub>Plans: a Gantt chart with dependencies</sub></td><td align="center" valign="top" width="25%"><img src="docs/screenshots/queue.png" alt="Queue: the 3-tier scheduler, autonomous mode" width="200"><br><sub>Queue: the 3-tier scheduler, autonomous mode</sub></td><td align="center" valign="top" width="25%"><img src="docs/screenshots/schedule.png" alt="Schedules, Plans and Queue" width="200"><br><sub>Schedules, Plans and Queue</sub></td><td align="center" valign="top" width="25%"><img src="docs/screenshots/shell.png" alt="The shell, running Jade Lisp" width="200"><br><sub>The shell, running Jade Lisp</sub></td></tr>
+  <tr><td align="center" valign="top" width="25%"><img src="docs/screenshots/loci.png" alt="Vault Loci: the vault as a memory palace" width="200"><br><sub>Vault Loci: the vault as a memory palace</sub></td></tr>
+</table>
+
+<sub>Taken in the app at phone size, on demo notes (`scripts/screenshots.mjs`).</sub>
+
 ## What Jade can do
 
 - **Notes:** markdown vault with `[[links]]`, backlinks, tags, graph, KaTeX math, images (`![[photo.png|300]]`), note embeds and a split editor.

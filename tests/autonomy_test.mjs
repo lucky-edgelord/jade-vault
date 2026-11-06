@@ -42,6 +42,8 @@ r = await gantt({ action: 'ready' }); ok(/Garden Shed \/ t1 Design/.test(r) && !
 ok(await page.evaluate(() => vfs.isFile('/Jade/Projects/garden-shed.json')), 'saved in /Jade/Projects');
 await page.evaluate(() => openPlans('garden-shed'));
 ok(await page.evaluate(() => document.querySelectorAll('#ganttSvg .g-task').length === 4 && !!document.querySelector('#ganttSvg .g-today') && document.querySelectorAll('#ganttSvg .g-link').length === 3), 'the Plans screen draws bars, links and today');
+ok(await page.evaluate(() => { const w = document.querySelector('#ganttWrap'), svg = document.querySelector('#ganttSvg'); return w.getBoundingClientRect().height >= svg.getBoundingClientRect().height - 1; }), 'the chart is not squeezed: every task row is visible');
+ok(await page.evaluate(() => { AUTO.cfg.on = true; AUTO.tasks = [{ id: 'q1', title: 'x', tier: 3, kind: 'goal', state: 'ready', level: 0, enq: 0, created: 0, slices: 0, steps: 0, by: 'user', spec: {} }]; openQueue(); const t = document.querySelector('.aq-status').textContent; AUTO.cfg.on = false; AUTO.tasks = []; openPlans('garden-shed'); return /1 task ready/.test(t); }), 'the Queue status says how many tasks are ready');
 // drag t3 two days later on the chart: t4 follows
 const dw = await page.evaluate(() => G_ZOOM[GUI.zoom]);
 const box = await page.evaluate(() => { const el = document.querySelector('#ganttSvg .g-task[data-id="t3"] rect'); el.scrollIntoView({ block: 'center', inline: 'start' }); const r = el.getBoundingClientRect(); return { x: r.x + 5, y: r.y + 5 }; });

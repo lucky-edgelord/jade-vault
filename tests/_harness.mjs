@@ -6,12 +6,12 @@ import { autoTabs } from './_tabs.mjs';
 const { chromium } = pw;
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' };
 
-export async function start({ settings = {}, init = '' } = {}) {
+export async function start({ settings = {}, init = '', scale = 1 } = {}) {
   const URL_ = process.argv[2] || 'file://' + process.env.JV_WEB;
   const css = fs.readFileSync('tw.css', 'utf8');
   const log = [], fail = []; const ok = (c, m) => (c ? log : fail).push((c ? 'PASS ' : 'FAIL ') + m);
   const browser = await chromium.launch({ args: [...(process.env.JV_GPU ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] : []), ...(process.env.JV_ARGS ? process.env.JV_ARGS.split(' ') : [])] });
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: scale });
   await ctx.addInitScript((settings) => {
     try { if (window !== window.top) return; } catch {}
     if (!localStorage.getItem('jvault:settings')) localStorage.setItem('jvault:settings', JSON.stringify({ model: 'qwen3:8b', journalOn: false, ollayaOn: true, ollayaModel: 'judge-1', ollayaHost: 'http://localhost:9911', ...settings }));
