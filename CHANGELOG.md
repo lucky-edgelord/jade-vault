@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.26.2
+
+- **Plans:** on a phone the chart showed only its first two tasks (the page squeezed it); it now shows every task.
+- **Queue:** the status line says how many tasks are ready instead of "Idle: nothing ready" while it waits for the next turn, and "no quiet hours" when there are none.
+- The README has screenshots of the app (taken by `scripts/screenshots.mjs` on demo notes).
+
 ## 2.26.1
 
 - **Plans** and **Queue** moved to the **Schedule** tab, next to **+ New**: they are about time, and the Notes bar was too crowded (Vault and Today overlapped on phones). Back from either returns to Schedule.

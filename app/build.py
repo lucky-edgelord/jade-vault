@@ -2054,7 +2054,7 @@ rep("    <!-- KNOWLEDGE -->", """    <!-- PLANS (Gantt) -->
     <!-- KNOWLEDGE -->""")
 rep('[hidden]{display:none!important}', '[hidden]{display:none!important}\n' + """[data-panel="files"]>.m-sub{overflow-x:auto;scrollbar-width:none}[data-panel="files"]>.m-sub::-webkit-scrollbar{display:none}[data-panel="files"]>.m-sub>*{flex-shrink:0}[data-panel="files"]>.m-sub>.pane-h{flex:0 0 auto;overflow:visible}@media (max-width:440px){[data-panel="files"]>.m-sub>.pane-h{display:none}}\n.m-sub .pane-h{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n#schedPanel>div:first-child{flex-wrap:wrap}\n.g-proj{flex:1;min-width:0}
 .g-sum{font-size:12px;color:var(--dim)}
-.g-wrap{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);background:rgba(5,10,8,.6);-webkit-overflow-scrolling:touch}
+.g-wrap{flex:none;overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);background:rgba(5,10,8,.6);-webkit-overflow-scrolling:touch}
 #ganttSvg{display:block;touch-action:pan-y;user-select:none}
 .g-grid{stroke:var(--line);stroke-width:1}.g-wkend{fill:rgba(255,255,255,.025)}
 .g-head{fill:var(--dim);font-size:10px;font-family:var(--f-mono,monospace)}.g-mon{fill:var(--fg)}

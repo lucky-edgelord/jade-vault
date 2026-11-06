@@ -273,7 +273,8 @@ function autoRender() {
   const P = $('#autoBody'); if (!P) return;
   const tasks = autoLoad(), c = AUTO.cfg, u = autoUsed(), open = tasks.filter(autoOpen);
   $('#autoOn').checked = !!c.on;
-  const st = c.on ? (AUTO.busy && AUTO.cur ? `Running ${AUTO.cur.id}: ${AUTO.cur.title}` : (autoBlocked() || 'Idle: nothing ready')) : 'Off';
+  const nReady = open.filter(t => t.state === 'ready' && (!t.notBefore || t.notBefore <= Date.now())).length;
+  const st = c.on ? (AUTO.busy && AUTO.cur ? `Running ${AUTO.cur.id}: ${AUTO.cur.title}` : (autoBlocked() || (nReady ? `On: ${nReady} task${nReady === 1 ? '' : 's'} ready, the next starts in a few seconds` : 'On: nothing ready'))) : 'Off: Jade only works when you ask her';
   const row = t => `<div class="aq-row ${t.state}" data-id="${esc(t.id)}">
       <div class="aq-t"><span class="aq-id">${esc(t.id)}</span> ${esc(t.title)}</div>
       <div class="aq-m">${esc(t.kind)} · ${esc(t.state)}${t.tier === 2 ? ' · prio ' + t.prio : t.tier === 3 ? ' · level ' + t.level : ''} · ${t.slices} slices · ${t.steps} steps${t.by !== 'user' ? ' · by ' + esc(t.by) : ''}${t.gantt ? ' · plan' : ''}</div>
@@ -286,7 +287,7 @@ function autoRender() {
   const tier = (n, name, help) => { const xs = open.filter(t => t.tier === n).sort(n === 2 ? (a, b) => autoEffPrio(b, Date.now()) - autoEffPrio(a, Date.now()) : n === 3 ? (a, b) => a.level - b.level || a.enq - b.enq : (a, b) => a.created - b.created); return `<div class="aq-tier"><div class="pane-h">Tier ${n} · ${name} <span class="aq-n">${xs.length}</span></div><p class="kg-help">${help}</p>${xs.map(row).join('') || '<p class="kg-help">Empty.</p>'}</div>`; };
   const recent = AUTO.hist.slice(-12).reverse();
   P.innerHTML = `<div class="aq-status${c.on ? ' on' : ''}">${esc(st)}</div>
-    <div class="aq-bud"><div><b>${u.hour}</b>/${c.stepsPerHour} steps this hour</div><div><b>${u.day}</b>/${c.dailyCap} today</div><div>quiet ${c.quietFrom}:00–${c.quietTo}:00</div></div>
+    <div class="aq-bud"><div><b>${u.hour}</b>/${c.stepsPerHour} steps this hour</div><div><b>${u.day}</b>/${c.dailyCap} today</div><div>${+c.quietFrom === +c.quietTo ? 'no quiet hours' : `quiet ${c.quietFrom}:00–${c.quietTo}:00`}</div></div>
     <div class="aq-strip">${AUTO.hist.slice(-60).map(r => `<span class="aq-s t${r.tier} ${esc(r.outcome)}" title="${esc(`${new Date(r.t).toLocaleTimeString()} ${r.id} ${r.title}: ${r.steps} steps, ${r.outcome}`)}" style="flex:${Math.max(1, r.steps)}"></span>`).join('')}</div>
     ${tier(1, 'Interrupts', 'Always first, in arrival order.')}
     ${tier(2, 'Priority queue', 'Highest priority first; waiting and deadlines raise it.')}
