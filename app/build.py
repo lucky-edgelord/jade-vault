@@ -2026,8 +2026,8 @@ _lisp_js = 'const LISP_SEED = ' + _json.dumps(_lisp, ensure_ascii=False).replace
 s = s.replace('/* =====================================================================\n   BOOT', _lisp_js + rd('lisp_tool.js') + '\n' + rd('gantt.js') + '\n' + rd('sched.js') + '\n/* =====================================================================\n   BOOT', 1)
 rep("    case 'knowledge': return await knowledgeTool(args);", "    case 'knowledge': return await knowledgeTool(args);\n    case 'lisp': return await lispTool(args);\n    case 'gantt': return await ganttTool(args, 'jade');\n    case 'sched': return await schedTool(args);")
 rep("' + kgPromptExtra() + '. Build tools", "' + kgPromptExtra() + '; lisp: Jade Lisp, your own Lisp for DSLs and scripts that call any tool; sched: your 3-tier scheduler for autonomous work (goals worked on in slices); gantt: long-term project plans (Gantt charts). Build tools")
-rep("const navFor = { file: 'files', graph: 'files', kg: 'files' }[name] || name;", "const navFor = { file: 'files', graph: 'files', kg: 'files', gantt: 'files', auto: 'files' }[name] || name;")
-rep('<span class="badge" id="kgBadge" hidden>0</span></button>', '<span class="badge" id="kgBadge" hidden>0</span></button>\n        <button class="btn btn-ghost" id="btnPlans" title="Plans: Gantt charts for long-term projects">Plans</button>\n        <button class="btn btn-ghost" id="btnQueue" title="Queue: the scheduler and autonomous mode">Queue</button>')
+rep("const navFor = { file: 'files', graph: 'files', kg: 'files' }[name] || name;", "const navFor = { file: 'files', graph: 'files', kg: 'files', gantt: 'sched', auto: 'sched' }[name] || name;")
+rep('<div class="pane-h">Schedules</div><button class="btn btn-solid cut cut-sm" id="btnSchedNew">+ New</button></div>', '<div class="pane-h">Schedules</div><div class="flex items-center gap-2"><button class="btn" id="btnPlans" title="Plans: Gantt charts for long-term projects">Plans</button><button class="btn" id="btnQueue" title="Queue: the scheduler and autonomous mode">Queue</button><button class="btn btn-solid cut cut-sm" id="btnSchedNew">+ New</button></div></div>')
 rep("    <!-- KNOWLEDGE -->", """    <!-- PLANS (Gantt) -->
     <section class="m-screen" data-panel="gantt" hidden>
       <div class="m-sub">
@@ -2052,7 +2052,7 @@ rep("    <!-- KNOWLEDGE -->", """    <!-- PLANS (Gantt) -->
     </section>
 
     <!-- KNOWLEDGE -->""")
-rep('[hidden]{display:none!important}', '[hidden]{display:none!important}\n' + """.g-proj{flex:1;min-width:0}
+rep('[hidden]{display:none!important}', '[hidden]{display:none!important}\n' + """[data-panel="files"]>.m-sub{overflow-x:auto;scrollbar-width:none}[data-panel="files"]>.m-sub::-webkit-scrollbar{display:none}[data-panel="files"]>.m-sub>*{flex-shrink:0}[data-panel="files"]>.m-sub>.pane-h{flex:0 0 auto;overflow:visible}@media (max-width:440px){[data-panel="files"]>.m-sub>.pane-h{display:none}}\n.m-sub .pane-h{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n#schedPanel>div:first-child{flex-wrap:wrap}\n.g-proj{flex:1;min-width:0}
 .g-sum{font-size:12px;color:var(--dim)}
 .g-wrap{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);background:rgba(5,10,8,.6);-webkit-overflow-scrolling:touch}
 #ganttSvg{display:block;touch-action:pan-y;user-select:none}

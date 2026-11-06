@@ -1,11 +1,11 @@
 # Autonomy and Plans
 
 **Jade Vault 2.26.0.** Jade can work on her own, in turns, within limits you set, and plan work that takes weeks.
-Two screens, both under **Notes**: **Queue** (the scheduler and autonomous mode) and **Plans** (Gantt charts).
+Two screens, both under **Schedule**: **Queue** (the scheduler and autonomous mode) and **Plans** (Gantt charts).
 
 ## Autonomous mode
 
-Turn on **Autonomous** in Notes → Queue. Jade then works through her queue continuously:
+Turn on **Autonomous** in Schedule → Queue. Jade then works through her queue continuously:
 
 - She stops for **quiet hours** (11pm–7am at first) and when the hour's or the day's **step budget** is used
   (60 model steps an hour and 600 a day at first). Change them under **Limits**.
@@ -44,7 +44,7 @@ You add one with **Add a task** in the Queue. A task can wait to start (`at` a t
 
 ## Plans (Gantt charts)
 
-Notes → Plans shows a project as a Gantt chart: a bar for each task over the calendar, arrows for dependencies,
+Schedule → Plans shows a project as a Gantt chart: a bar for each task over the calendar, arrows for dependencies,
 diamonds for milestones, the done part filled in, a dashed line for today, and Days, Weeks or Months.
 
 - **Drag** a bar to move a task; the tasks that depend on it move after it.
