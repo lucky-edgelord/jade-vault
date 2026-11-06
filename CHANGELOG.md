@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.26.0
+
+- **Autonomous mode, run by a 3-tier scheduler.** The new **Queue** screen (Notes → Queue) has an **Autonomous** switch. When it is on, Jade works through her queue on her own, the way an operating system schedules programs (a multilevel feedback queue):
+  - **Tier 1, interrupts:** urgent items, always first, in the order they came. Jade can hold at most three of her own.
+  - **Tier 2, the priority queue:** one-off work with a priority (0–100) and an optional due time. Waiting raises priority (up to +40), and a near or missed deadline raises it more, so nothing waits forever.
+  - **Tier 3, round robin:** long goals, worked on in short slices of 2, 4 or 8 model steps. A goal that uses its whole slice drops a level; one that waits 30 minutes rises again. Tier 3 gets at least every 4th turn even when tier 2 is busy.
+  - Between slices Jade keeps only a short note, and ends each slice with `STATUS: done`, `continue` or `blocked: …` (a blocked task waits for you, with the reason).
+  - Tasks can be goals, one-off prompts, flows, playbooks, shell commands or Jade Lisp programs.
+- **Your limits.** Steps an hour (60 by default), a daily cap (600), quiet hours (11pm–7am), and a pause while you use the app or chat. **Stop** turns it off at once. Tools that reach outside the vault (phone, SSH, Discord, USB, browsers, screen, apps, MCP servers; you can edit the list) wait for your **Allow** in the Queue. Everything Jade does is logged in `/Jade/Autonomy/log.md`, and the Queue shows each tier, recent slices and a strip of the last 60.
+- **Plans: Gantt charts for long-term projects.** The new **Plans** screen (Notes → Plans) draws projects as a Gantt chart: tasks with dates, dependencies (arrows), milestones (diamonds), owners (you or Jade), percent done, a today line, the critical path, and days, weeks or months. Drag a bar to move a task (the tasks after it follow); tap it to edit. Plans are files in `/Jade/Projects`. Jade plans with the new `gantt` tool: she adds tasks, links them, reschedules (`plan`), and reports what is late, blocked, ready or on the critical path. Your tasks are yours: she asks before changing one. With autonomous mode on, her ready tasks go into tier 3 by themselves and are marked 100% when done.
+- **Jade Lisp is part of the base system.** A small Scheme/Clojure-style Lisp (`/Jade/tools/lisp.js`) for building DSLs and scripting, with the new `lisp` tool. Every tool is callable as `(tool/NAME :arg value)`, plus `jade/ask`, `jade/flow`, `jade/shell`, `tflite/load` and `tflite/run`, files and JSON. It has macros (`defmacro`, quasiquote), tail calls, try/catch, maps and keywords; `(sandbox :pure)` with `eval-in` runs programs someone else wrote with only the verbs you give them and a step limit. A DSL library (`/Jade/Lisp/lib/dsl.jl`) and examples (a state machine, a rules language, tools, LiteRT) come with it. From the shell: `node /Jade/tools/lisp.js FILE.jl` or `node /Jade/tools/lisp.js eval '(+ 1 2)'`.
+- Two new skills, **autonomy** and **lisp-dsl**, and new guides: Autonomy and Plans, and Jade Lisp.
+
 ## 2.25.0
 
 - **The knowledge graph: facts, rules, and a reasoner that proves its answers.** Notes → Knowledge holds facts like `works_at(alice, acme)` and rules and constraints, and a reasoner (Datalog, written in Rust and run as WebAssembly) checks claims against them. Every answer is one of three:

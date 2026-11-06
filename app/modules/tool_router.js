@@ -30,6 +30,9 @@ const TR_HINTS = {
   backup: 'backup restore server export',
   http_request: 'http api request post put get rest json endpoint download webhook',
   jade_link: 'link board jade link',
+  lisp: 'lisp scheme clojure dsl domain specific language macro interpreter s-expression script program eval parse rules language',
+  sched: 'schedule scheduler queue autonomous autonomy goal goals background later while away priority interrupt task tasks long running work on my own',
+  gantt: 'gantt plan plans project projects milestone milestones timeline roadmap deadline dependencies critical path weeks months long term planning',
   knowledge: 'knowledge graph fact facts verify verification prove proof true false contradiction contradict consistent consistency check claim rule rules logic datalog reasoner who works relation',
   vault_map: 'vault map loci locus palace memory palace avatar walk room place show around remember at where go',
 };
