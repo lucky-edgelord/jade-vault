@@ -33,7 +33,7 @@ GUIDES = {  # stem: (parent, level, order, era)
  'notes': ('guides', 2, 4, 'old'), 'jade-and-memory': ('guides', 2, 5, 'old'), 'scripting': ('guides', 2, 6, 'old'), 'note-scripts-and-templates': ('guides', 2, 7, 'old'),
  'automation': ('guides', 2, 8, 'old'), 'integrations': ('guides', 2, 9, 'old'), 'apps': ('guides', 2, 10, 'old'), 'discord': ('guides', 2, 11, 'old'), 'vector': ('guides', 2, 12, 'old'),
  'http-api': ('guides', 2, 13, 'old'), 'backup-and-storage': ('guides', 2, 14, 'old'), 'security-and-privacy': ('guides', 2, 15, 'old'), 'troubleshooting': ('guides', 2, 16, 'old'),
- 'backup-server': ('guides', 2, 17, 'new'), 'knowledge-graph': ('guides', 2, 18), 'autonomy': ('guides', 2, 19, 'new'), 'jade-lisp': ('guides', 2, 20, 'new'),
+ 'backup-server': ('guides', 2, 17, 'new'), 'knowledge-graph': ('guides', 2, 18, 'new'), 'autonomy-and-plans': ('guides', 2, 19, 'new'), 'jade-lisp': ('guides', 2, 20, 'new'),
  'development': ('architecture', 3, 40, 'old'), 'android-apk': ('architecture', 3, 41, 'old'), 'deployment-and-releases': ('architecture', 3, 42, 'old'), 'design-tree-of-thoughts': ('think-delegate', 3, 5, 'design'),
 }
 def fix_links(md):
