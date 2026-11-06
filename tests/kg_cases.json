@@ -1,0 +1,293 @@
+{
+ "about": "Shared cases for the knowledge engine: app/modules/kg_engine.js and jade-py's jade/kg.py must give these exact results.",
+ "cases": [
+  {
+   "name": "fact holds",
+   "rules": "works_at(alice, acme).",
+   "op": "verify",
+   "input": "works_at(alice, acme)",
+   "verdict": "proven"
+  },
+  {
+   "name": "missing is unknown, not false",
+   "rules": "works_at(alice, acme).",
+   "op": "verify",
+   "input": "works_at(bob, acme)",
+   "verdict": "unknown",
+   "related": [
+    "works_at(alice, acme)"
+   ]
+  },
+  {
+   "name": "transitive rule",
+   "rules": "reports_to(bob, alice). reports_to(carol, bob). reports_to(dan, carol).\nchain(X, Y) :- reports_to(X, Y).\nchain(X, Z) :- reports_to(X, Y), chain(Y, Z).",
+   "op": "query",
+   "input": "chain(dan, X)",
+   "answers": [
+    {
+     "X": "carol"
+    },
+    {
+     "X": "bob"
+    },
+    {
+     "X": "alice"
+    }
+   ]
+  },
+  {
+   "name": "proof walks the rule",
+   "rules": "reports_to(bob, alice). reports_to(carol, bob).\nchain(X, Y) :- reports_to(X, Y).\nchain(X, Z) :- reports_to(X, Y), chain(Y, Z).",
+   "op": "verify",
+   "input": "chain(carol, alice)",
+   "verdict": "proven",
+   "proof_facts": [
+    "reports_to(bob, alice)",
+    "reports_to(carol, bob)"
+   ]
+  },
+  {
+   "name": "constraint check",
+   "rules": "works_at(alice, acme). works_at(alice, globex). works_at(bob, acme).\n! one_employer: works_at(P, A), works_at(P, B), A < B.",
+   "op": "check",
+   "violations": [
+    [
+     "one_employer",
+     {
+      "A": "acme",
+      "B": "globex",
+      "P": "alice"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "a symmetric constraint reports each contradiction once",
+   "rules": "works_at(alice, acme). works_at(alice, globex).\n! one_employer: works_at(P, A), works_at(P, B), A != B.",
+   "op": "check",
+   "violations": [
+    [
+     "one_employer",
+     {
+      "A": "acme",
+      "B": "globex",
+      "P": "alice"
+     }
+    ]
+   ]
+  },
+  {
+   "name": "claim breaks a constraint",
+   "rules": "works_at(alice, acme).\n! one_employer: works_at(P, A), works_at(P, B), A != B.",
+   "op": "verify",
+   "input": "works_at(alice, globex)",
+   "verdict": "contradicted",
+   "constraints": [
+    "one_employer"
+   ]
+  },
+  {
+   "name": "not-claim contradicted",
+   "rules": "likes(ann, tea).",
+   "op": "verify",
+   "input": "not likes(ann, tea)",
+   "verdict": "contradicted"
+  },
+  {
+   "name": "not-claim unknown (open world)",
+   "rules": "likes(ann, tea).",
+   "op": "verify",
+   "input": "not likes(ann, coffee)",
+   "verdict": "unknown"
+  },
+  {
+   "name": "stratified negation",
+   "rules": "person(ann). person(bo). employed(ann).\nfree(X) :- person(X), not employed(X).",
+   "op": "query",
+   "input": "free(X)",
+   "answers": [
+    {
+     "X": "bo"
+    }
+   ]
+  },
+  {
+   "name": "negation through recursion refused",
+   "rules": "p(X) :- q(X), not p(X). q(a).",
+   "op": "error",
+   "code": "stratify"
+  },
+  {
+   "name": "unsafe head variable refused",
+   "rules": "p(X, Y) :- q(X). q(a).",
+   "op": "error",
+   "code": "unsafe"
+  },
+  {
+   "name": "unsafe negation refused",
+   "rules": "p(X) :- not q(X).",
+   "op": "error",
+   "code": "unsafe"
+  },
+  {
+   "name": "fact with a variable refused",
+   "rules": "p(X).",
+   "op": "error",
+   "code": "parse"
+  },
+  {
+   "name": "numbers compare by value",
+   "rules": "age(ann, 9). age(bo, 30). age(cy, 100).\nadult(X) :- age(X, A), A >= 18.",
+   "op": "query",
+   "input": "adult(X)",
+   "answers": [
+    {
+     "X": "bo"
+    },
+    {
+     "X": "cy"
+    }
+   ]
+  },
+  {
+   "name": "text compares by code point; never with numbers",
+   "rules": "d(a, \"2026-01-05\"). d(b, \"2025-12-31\"). d(c, 7).\nlate(X) :- d(X, D), D > \"2026-01-01\".",
+   "op": "query",
+   "input": "late(X)",
+   "answers": [
+    {
+     "X": "a"
+    }
+   ]
+  },
+  {
+   "name": "quoted text and numbers are values",
+   "rules": "named(p1, \"Ann Lee\"). score(p1, 2.5).",
+   "op": "query",
+   "input": "named(P, N), score(P, S)",
+   "answers": [
+    {
+     "N": "Ann Lee",
+     "P": "p1",
+     "S": 2.5
+    }
+   ]
+  },
+  {
+   "name": "number and text are different",
+   "rules": "v(a, 1). v(b, \"1\").",
+   "op": "query",
+   "input": "v(X, 1)",
+   "answers": [
+    {
+     "X": "a"
+    }
+   ]
+  },
+  {
+   "name": "equals binds",
+   "rules": "p(a). p(b).\nq(X, Y) :- p(X), Y = X.",
+   "op": "query",
+   "input": "q(a, Y)",
+   "answers": [
+    {
+     "Y": "a"
+    }
+   ]
+  },
+  {
+   "name": "anonymous variable",
+   "rules": "e(a, b). e(a, c). e(d, b).",
+   "op": "query",
+   "input": "e(X, _)",
+   "answers": [
+    {
+     "X": "a"
+    },
+    {
+     "X": "d"
+    }
+   ]
+  },
+  {
+   "name": "zero-arity facts",
+   "rules": "raining.\nwet :- raining.",
+   "op": "verify",
+   "input": "wet",
+   "verdict": "proven"
+  },
+  {
+   "name": "proposed facts are counted, and reported",
+   "rules": "",
+   "facts": [
+    {
+     "id": "f1",
+     "fact": "works_at(alice, acme)",
+     "status": "proposed"
+    }
+   ],
+   "op": "verify",
+   "input": "works_at(alice, acme)",
+   "verdict": "proven",
+   "rests_on_unconfirmed": [
+    "f1"
+   ]
+  },
+  {
+   "name": "rejected facts are ignored",
+   "rules": "",
+   "facts": [
+    {
+     "id": "f1",
+     "fact": "works_at(alice, acme)",
+     "status": "rejected"
+    }
+   ],
+   "op": "verify",
+   "input": "works_at(alice, acme)",
+   "verdict": "unknown"
+  },
+  {
+   "name": "mutual recursion",
+   "rules": "edge(a, b). edge(b, a). edge(b, c).\nreach(X, Y) :- edge(X, Y).\nreach(X, Y) :- edge(X, Z), reach(Z, Y).",
+   "op": "query",
+   "input": "reach(a, Y)",
+   "answers": [
+    {
+     "Y": "a"
+    },
+    {
+     "Y": "b"
+    },
+    {
+     "Y": "c"
+    }
+   ]
+  },
+  {
+   "name": "query with a variable claim",
+   "rules": "works_at(alice, acme).",
+   "op": "verify",
+   "input": "works_at(alice, X)",
+   "verdict": "proven"
+  },
+  {
+   "name": "comments and quotes",
+   "rules": "% a comment\nsays(ann, \"50% \\\"off\\\" # not a comment\"). # trailing",
+   "op": "query",
+   "input": "says(ann, T)",
+   "answers": [
+    {
+     "T": "50% \"off\" # not a comment"
+    }
+   ]
+  },
+  {
+   "name": "parse error has a line",
+   "rules": "a(b).\nc(d",
+   "op": "error",
+   "code": "parse",
+   "message_has": "line 2"
+  }
+ ]
+}

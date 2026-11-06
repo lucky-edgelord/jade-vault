@@ -264,11 +264,11 @@ ok(sp2.startsWith('# SYSTEM\n\nYou are Bob') || sp2.startsWith('# SYSTEM\nYou ar
 ok(!/Guidelines:/.test(sp2) && /Tools:/.test(sp2) && /neon edge/.test(sp2), 'SYSTEM.md drops guidelines, keeps tools + soul');
 await page.evaluate(() => vfs.rm('/Jade/SYSTEM.md'));
 // ---- v3: skills ----
-await page.waitForFunction(() => vfs.isFile('/Jade/skills/vault-map/SKILL.md'), null, { timeout: 15000 });   // seeded by 2.24's Vault Loci
+await page.waitForFunction(() => vfs.isFile('/Jade/skills/vault-map/SKILL.md') && vfs.isFile('/Jade/skills/knowledge-graph/SKILL.md'), null, { timeout: 15000 });   // seeded by Vault Loci (2.24) and the knowledge graph (2.25)
 const sk = await page.evaluate(async () => { const t = async (n, a) => { try { return await runTool(n, a, null); } catch (e) { return 'ERR ' + e.message; } };
   return { n: listSkills().length, tool: await t('skill', { name: 'Daily Review' }), bad: await t('skill', { name: 'nope' }),
     mk: await t('write', { path: '/Jade/skills/weekly-review/SKILL.md', content: '---\nname: weekly-review\ndescription: Weekly review. Use on Sundays.\n---\n# Weekly\n1. Do it.\n' }), n2: listSkills().length }; });
-ok(sk.n === 6 && sk.n2 === 7, 'skills seeded + new skill via write (not blocked as duplicate): ' + sk.n + '→' + sk.n2 + ' ' + sk.mk.slice(0, 50));
+ok(sk.n === 7 && sk.n2 === 8, 'skills seeded + new skill via write (not blocked as duplicate): ' + sk.n + '→' + sk.n2 + ' ' + sk.mk.slice(0, 50));
 ok(/Skill "daily-review" loaded/.test(sk.tool) && /Collect open tasks/.test(sk.tool), 'skill tool loads instructions');
 ok(/No skill named "nope". Available:/.test(sk.bad), 'unknown skill error lists skills');
 // slash suggest + /skill: in composer (new chat so the mock restarts its script)

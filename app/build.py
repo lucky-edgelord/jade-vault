@@ -1977,6 +1977,47 @@ _vl = _b64.b64encode(open(os.path.join(DIST, 'vault-loci.xdc'), 'rb').read()).de
 _i = s.index('<script type="application/octet-stream" id="xdc-jadelink">'); _j = s.index('</script>', _i) + len('</script>')
 s = s[:_j] + '\n<script type="application/octet-stream" id="xdc-vaultloci">' + _vl + '</script>' + s[_j:]
 rep("    case 'more_tools': return moreToolsTool(args);", "    case 'more_tools': return moreToolsTool(args);\n    case 'vault_map': return await vaultMapTool(args);")
+# ================= v2.25: the knowledge graph (Rust reasoner as WebAssembly), the knowledge tool and the Knowledge screen =================
+s = s.replace('/* =====================================================================\n   BOOT', rd('knowledge.js') + '\n/* =====================================================================\n   BOOT', 1)
+_kg = _b64.b64encode(_gz.compress(open(os.path.join(D, 'vendor', 'jade_kg.wasm'), 'rb').read(), 9, mtime=0)).decode()
+s = s.replace('<script type="application/octet-stream" id="jade-core-wasm">', '<script type="application/octet-stream" id="jade-kg-wasm">' + _kg + '</script>\n<script type="application/octet-stream" id="jade-core-wasm">', 1)
+rep("    case 'more_tools': return moreToolsTool(args);", "    case 'more_tools': return moreToolsTool(args);\n    case 'knowledge': return await knowledgeTool(args);")
+rep("think: tree of thoughts with verification (call help first). Build tools", "think: tree of thoughts with verification (call help first); knowledge: the knowledge graph (facts, rules, constraints) and a reasoner that proves answers: verify claims, query, check for contradictions' + kgPromptExtra() + '. Build tools")
+rep("const navFor = { file: 'files', graph: 'files' }[name] || name;", "const navFor = { file: 'files', graph: 'files', kg: 'files' }[name] || name;")
+rep('<button class="btn btn-ghost" id="btnGraph" title="Graph view">Graph</button>', '<button class="btn btn-ghost" id="btnGraph" title="Graph view">Graph</button>\n        <button class="btn btn-ghost kg-btn" id="btnKnowledge" title="Knowledge graph: facts, rules, verification">Knowledge<span class="badge" id="kgBadge" hidden>0</span></button>')
+rep("    <!-- GRAPH -->", """    <!-- KNOWLEDGE -->
+    <section class="m-screen" data-panel="kg" hidden>
+      <div class="m-sub">
+        <button class="icon-btn" id="btnKgBack" aria-label="Back" style="width:38px;height:38px"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <span class="disp text-yl font-bold text-[14px] truncate flex-1 min-w-0">Knowledge</span>
+        <label class="kg-chk" title="Jade checks her factual claims against the graph and marks them"><input type="checkbox" id="kgVerify"> Verify answers</label>
+      </div>
+      <div class="kg-views" id="kgViews" role="tablist"><button role="tab" data-v="ask">Ask</button><button role="tab" data-v="facts">Facts</button><button role="tab" data-v="rules">Rules</button><button role="tab" data-v="check">Check</button><button role="tab" data-v="graph">Graph</button></div>
+      <div class="kg-body" id="kgPanel"></div>
+    </section>
+
+    <!-- GRAPH -->""")
+rep('[hidden]{display:none!important}', '[hidden]{display:none!important}\n' + """.kg-btn{position:relative}.kg-btn .badge{position:absolute;top:-6px;right:-6px}
+.kg-views{display:flex;gap:4px;padding:6px 10px;border-bottom:1px solid var(--line);overflow-x:auto}
+.kg-views button{flex:1;min-height:36px;padding:0 10px;background:none;border:1px solid var(--line);color:var(--dim);font-family:var(--f-disp);letter-spacing:.06em;font-size:12px;cursor:pointer;white-space:nowrap}
+.kg-views button[aria-selected=true]{border-color:var(--line-hot);color:var(--fg);background:rgba(31,229,165,.12)}
+.kg-body{flex:1;min-height:0;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.kg-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.kg-row .field{min-width:0}
+.kg-help{font-size:12px;color:var(--dim);margin:0;line-height:1.5}.kg-help code,.kg-ft code{font-family:var(--f-mono,monospace)}
+.kg-help.ok{color:#1fe5a5}.kg-help.bad{color:#ff6b7a}
+.kg-out{margin:0;padding:10px;border:1px solid var(--line);background:rgba(5,10,8,.7);white-space:pre-wrap;word-break:break-word;font-size:12.5px;line-height:1.5;min-height:48px;user-select:text}
+.kg-out.ok{border-color:rgba(31,229,165,.6)}.kg-out.bad{border-color:rgba(255,61,79,.7)}.kg-out.unk{border-color:rgba(255,200,80,.6)}
+.kg-prop{padding:8px 10px;border:1px dashed rgba(255,200,80,.6);font-size:13px}
+.kg-list{display:flex;flex-direction:column}
+.kg-fact{padding:8px 4px;border-bottom:1px solid var(--line)}
+.kg-ft{display:flex;gap:8px;align-items:center;justify-content:space-between;font-size:13px;word-break:break-word}
+.kg-st{font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border:1px solid var(--line);white-space:nowrap}
+.kg-st.confirmed{color:#1fe5a5;border-color:rgba(31,229,165,.5)}.kg-st.proposed{color:#ffc850;border-color:rgba(255,200,80,.5)}.kg-st.rejected{color:var(--dim)}
+.kg-src{font-size:11px;color:var(--dim);margin-top:2px}
+.kg-acts{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.kg-acts .btn{min-height:32px;padding:0 10px;font-size:12px}
+.kg-rules{min-height:300px;font-size:12.5px;line-height:1.5;width:100%}
+.kg-chk{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);cursor:pointer}
+.kg-cv{flex:1;min-height:360px;width:100%;touch-action:none;border:1px solid var(--line)}""")
 for bad in ['showPreview', 'schedulePreview', 'prevFrame', 'btnPrevBack', 'btnFilePreview', 'btnFileSave', 'inlineAssets']:
     if bad in s: print('WARN leftover', bad, s.count(bad))
 open(os.path.join(DIST, 'jade-vault.html'), 'w').write(s)

@@ -287,6 +287,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "jade-kg"
+version = "2.19.0"
+dependencies = [
+ "serde_json",
+]
+
+[[package]]
 name = "jade-wasm"
 version = "2.19.0"
 dependencies = [

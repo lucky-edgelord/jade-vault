@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["core", "wasm", "android"]
+members = ["core", "wasm", "android", "kg"]
 
 [workspace.package]
 version = "2.19.0"
@@ -16,3 +16,6 @@ strip = true
 
 [profile.release.package.jade-wasm]
 opt-level = "s"
+
+[profile.release.package.jade-kg]
+opt-level = 3

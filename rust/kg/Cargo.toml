@@ -1,0 +1,11 @@
+[package]
+name = "jade-kg"
+version.workspace = true
+edition.workspace = true
+description = "Jade's knowledge graph: a small Datalog reasoner with proofs, as WebAssembly with a JSON interface"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde_json = "1"
