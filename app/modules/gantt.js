@@ -289,7 +289,7 @@ function ganttWireDrag(p, dw) {
 }
 function ganttWire() {
   const back = $('#btnGanttBack'); if (!back) return;
-  back.onclick = () => setTab('files');
+  back.onclick = () => setTab('sched');
   $('#ganttProj').onchange = e => { GUI.project = e.target.value; GUI.sel = null; GUI.scroll = null; ls.set('ganttProject', GUI.project); ganttRender(); };
   $$('#ganttZoom [data-z]').forEach(b => b.onclick = () => { GUI.zoom = b.dataset.z; GUI.scroll = null; ls.set('ganttZoom', GUI.zoom); ganttRender(); });
   $('#btnGanttNew').onclick = async () => {

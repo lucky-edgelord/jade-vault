@@ -323,7 +323,7 @@ function autoRender() {
 }
 function autoWire() {
   const back = $('#btnAutoBack'); if (!back) return;
-  back.onclick = () => setTab('files');
+  back.onclick = () => setTab('sched');
   $('#autoOn').onchange = e => { autoSet(e.target.checked); if (e.target.checked) toast('Autonomous mode is on. Jade works through the queue within your limits.', 'ok'); };
   $('#btnAutoStop').onclick = () => autoStopNow();
   const b = $('#btnQueue'); if (b) b.onclick = () => openQueue();

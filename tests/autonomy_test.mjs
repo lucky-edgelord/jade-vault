@@ -137,6 +137,10 @@ await page.evaluate(() => autoAdd({ title: 'After', goal: 'anything' }, 'user'))
 ok(await page.evaluate(() => AUTO.tasks.find(t => t.title === 'After').state === 'ready'), 'nothing runs while it is off');
 ok(await page.evaluate(() => document.querySelectorAll('#autoBody .aq-tier').length === 4 && document.querySelectorAll('#autoBody .aq-s').length >= 5), 'the Queue screen shows three tiers, recent slices and the slice strip');
 r = await sched({ action: 'log', limit: 3 }); ok(r.split('\n').length === 3, 'log');
-ok(await page.evaluate(() => document.querySelector('#btnPlans') && document.querySelector('#btnQueue')), 'Plans and Queue buttons are in the Files bar');
+ok(await page.evaluate(() => !!document.querySelector('[data-panel="sched"] #btnPlans') && !!document.querySelector('[data-panel="sched"] #btnQueue') && !document.querySelector('[data-panel="files"] #btnPlans')), 'Plans and Queue are on the Schedule tab, not the Notes bar');
+await page.evaluate(() => document.querySelector('#btnAutoBack').click());
+ok(await page.evaluate(() => !document.querySelector('[data-panel="sched"]').hidden && document.querySelector('.tab[data-tab="sched"]').getAttribute('aria-selected') === 'true'), 'back from Queue returns to Schedule');
+await page.evaluate(() => document.querySelector('#btnPlans').click());
+ok(await page.evaluate(() => !document.querySelector('[data-panel="gantt"]').hidden && document.querySelector('.tab[data-tab="sched"]').getAttribute('aria-selected') === 'true'), 'Plans opens with the Schedule tab lit');
 
 await t.done();
