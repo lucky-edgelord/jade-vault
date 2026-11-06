@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.25.0
+
+- **The knowledge graph: facts, rules, and a reasoner that proves its answers.** Notes → Knowledge holds facts like `works_at(alice, acme)` and rules and constraints, and a reasoner (Datalog, written in Rust and run as WebAssembly) checks claims against them. Every answer is one of three:
+  - ✓ **proven**, with the facts and rules it rests on;
+  - ✗ **contradicted**: its opposite holds, or it would break one of your constraints (for example "a person has one employer");
+  - ? **unknown**: the graph does not say. Missing is never treated as false.
+- **Verify Jade's answers.** The new `knowledge` tool lets Jade verify claims, answer questions with variables (`above(bob, X)`), show why something holds, and list every contradiction in the graph. Turn on **Verify answers** in the Knowledge screen and she checks her factual claims against the graph and marks each one ✓, ✗ or ?.
+- **Check your notes.** Ask Jade to read notes and propose their facts, then **Check** lists every constraint they break, with the facts involved.
+- **You decide what counts.** Facts you add are confirmed. Facts Jade adds are proposed until you confirm them (the Knowledge button shows how many wait; Confirm all, or one at a time). A proof that rests on unconfirmed facts says so, and a fact you reject stays out: Jade cannot add it again.
+- The Knowledge screen has Ask (verify, query, why), Facts, Rules (an editor that refuses a broken rules file and says which line), Check and Graph views. The files are `/Jade/Knowledge/facts.jsonl` and `/Jade/Knowledge/rules.dl`, plain text that syncs and backs up with the vault; jade-py 0.12 uses the same files and the same engine. A `knowledge-graph` skill tells Jade how to extract facts and report verdicts.
+- The engine handles large graphs: in tests, 180,000 facts that follow from a chain of 600 people take about 0.15 s in the browser, and a graph that would grow past 2 million facts stops with a clear error.
+
 ## 2.24.0
 
 - **Vault Loci: a map of the vault that you and Jade walk together.** A new built-in app in the Apps tab: a top-down, lit pixel-art room with eleven places (loci), used as a memory palace. Walk the avatar with the D-pad, WASD or the arrow keys (Shift or a held B runs), a gamepad, or a tap on the floor; A or E opens a place. **Jade walks the same avatar** with a new `vault_map` tool: she can look around, walk to a place, open it, speak in a speech bubble, change the lighting, and pin, recall or forget memories at places. Your own input always wins over a walk she is making, and she is told to stop and ask. `look` gives her a text map of the room and the direction and walking distance to every place, so she can find her way.

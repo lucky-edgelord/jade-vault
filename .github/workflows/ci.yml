@@ -29,6 +29,8 @@ jobs:
         run: npm run build
       - name: Tests
         run: npm test
+      - name: Knowledge engine (Rust)
+        run: cargo test --manifest-path rust/Cargo.toml -p jade-kg --release
       - name: Build APK (debug key)
         run: bash android/build-apk.sh
       - name: Bridge checks

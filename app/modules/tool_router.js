@@ -30,6 +30,7 @@ const TR_HINTS = {
   backup: 'backup restore server export',
   http_request: 'http api request post put get rest json endpoint download webhook',
   jade_link: 'link board jade link',
+  knowledge: 'knowledge graph fact facts verify verification prove proof true false contradiction contradict consistent consistency check claim rule rules logic datalog reasoner who works relation',
   vault_map: 'vault map loci locus palace memory palace avatar walk room place show around remember at where go',
 };
 const trHidden = () => cur?.toolsHidden || [];
@@ -45,6 +46,10 @@ function trQuery() {
   const skillText = ms.slice(-8).filter(m => m.role === 'tool' && m.tool_name === 'skill').map(m => String(m.content || '')).join('\n');
   return { q, skillText };
 }
+// Filler words say nothing about which tool a message needs, but every long tool description is full of them: left in,
+// a plain question ("what is the capital of France?") would pull in whichever tool has the most "the" and "is".
+const TR_STOP = new Set('a an and are as at be but by can could do does did for from has have how i if in into is it its me my no not of on or our please so than thanks thank that the their them then there these they this to us was we what when where which who why will with would yes you your'.split(' '));
+const trContent = q => String(q).split(/\s+/).filter(w => !TR_STOP.has(w.toLowerCase().replace(/[^a-z']/g, ''))).join(' ');
 function routeTools(list) {
   const mode = S.toolRouter || 'auto';
   if (mode === 'off' || !cur) return list;
@@ -58,7 +63,7 @@ function routeTools(list) {
   const lower = ' ' + q.toLowerCase().replace(/[^a-z0-9_ ]+/g, ' ') + ' ';
   for (const t of opt) { const n = t.function.name; if (lower.includes(' ' + n.toLowerCase() + ' ') || (skillText && new RegExp('\\b' + n.replace(/[^a-z0-9_]/gi, '') + '\\b', 'i').test(skillText))) keep.add(n); }
   if (q.trim()) {
-    const ranked = bm25(opt.map(t => ({ name: t.function.name, text: `${t.function.name} ${TR_HINTS[t.function.name] || ''} ${TR_HINTS[t.function.name] || ''} ${t.function.description}` })), typeof searchText === 'function' ? searchText(q) : q);
+    const ranked = bm25(opt.map(t => ({ name: t.function.name, text: `${t.function.name} ${TR_HINTS[t.function.name] || ''} ${TR_HINTS[t.function.name] || ''} ${t.function.description}` })), trContent(typeof searchText === 'function' ? searchText(q) : q));
     const top = ranked[0]?.s || 0;
     for (const x of ranked.filter(x => x.s >= Math.max(0.5 * top, 1.2)).slice(0, TR_MAX)) keep.add(x.d.name);
   }
