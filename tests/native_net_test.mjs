@@ -91,7 +91,9 @@ ok(chat.reply === 'Agent says: hello there' && chat.viaNative, 'a streamed chat 
 const wf = await E(async () => { const n = __net.reqs.length; const t = await runTool('web_fetch', { url: 'https://site.test/page' }); return { t, urls: __net.reqs.slice(n).map(r => r.url) }; });
 ok(wf.t.startsWith('# Test Page') && wf.t.includes('# Big news') && wf.t.includes('[a link](https://site.test/x)') && wf.t.includes('- one\n- two'), 'web_fetch reads the page and converts it in Rust:\n' + wf.t.slice(0, 160));
 ok(!wf.t.includes('Menu') && !wf.t.includes('alert'), 'navigation and scripts are left out');
-ok(wf.urls.length === 1 && !wf.urls.some(u => /jina|ollama\.com/.test(u)), 'no third-party reader was asked: ' + wf.urls.join(', '));
+// the vault may embed newly seeded notes with the local model at the same moment (/api/embed): that is not a reader
+const fetched = wf.urls.filter(u => !/\/api\/embed$/.test(u));
+ok(fetched.length === 1 && !fetched.some(u => /jina|ollama\.com/.test(u)), 'no third-party reader was asked: ' + wf.urls.join(', '));
 ok((await E(() => runTool('web_fetch', { url: 'https://site.test/notes.txt' }))) === 'plain words here', 'plain text pages come back as they are');
 
 // two web_fetch calls in one round run at the same time
