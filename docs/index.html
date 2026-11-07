@@ -868,7 +868,7 @@ body[data-jade-theme="custom-gradient"] .jade-theme-label{background:var(--theme
   <div id="sessList" class="overflow-y-auto min-h-0"></div>
   <div class="status-grid">
     <label class="lbl" for="provSel">Provider</label>
-    <select id="provSel" class="field cut-sm cut"><option value="local">Ollama on my computer</option><option value="llamacpp">llama.cpp server</option><option value="cloud">Ollama Cloud</option><option value="groq">Groq</option><option value="openai">OpenAI-compatible</option><option value="aicord">AICord (character chat)</option></select>
+    <select id="provSel" class="field cut-sm cut"><option value="local">Ollama on my computer</option><option value="llamacpp">llama.cpp server</option><option value="cloud">Ollama Cloud</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option><option value="openai">OpenAI-compatible</option><option value="aicord">AICord (character chat)</option></select>
     <label class="lbl" for="modelSel">Model</label>
     <select id="modelSel" class="field cut-sm cut" style="border-color:var(--line-hot);color:var(--yl)"></select>
     <span class="chip" id="chipOllama" title="Ollama connection"><span class="dot" id="dotOllama"></span><span id="txtOllama">OLLAMA</span></span>
@@ -889,7 +889,7 @@ body[data-jade-theme="custom-gradient"] .jade-theme-label{background:var(--theme
       <section data-tab="model" class="flex flex-col gap-3">
         <div class="pane-h">Model provider</div>
         <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
-          <div><label class="lbl" for="sProvider">Provider</label><select id="sProvider" class="field mt-1"><option value="local">Ollama on my computer</option><option value="llamacpp">llama.cpp server</option><option value="cloud">Ollama Cloud (ollama.com)</option><option value="groq">Groq</option><option value="openai">OpenAI-compatible endpoint</option><option value="aicord">AICord (character chat)</option></select></div>
+          <div><label class="lbl" for="sProvider">Provider</label><select id="sProvider" class="field mt-1"><option value="local">Ollama on my computer</option><option value="llamacpp">llama.cpp server</option><option value="cloud">Ollama Cloud (ollama.com)</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option><option value="openai">OpenAI-compatible endpoint</option><option value="aicord">AICord (character chat)</option></select></div>
           <div data-prov="local"><label class="lbl" for="sHost">Ollama address</label><input id="sHost" class="field mt-1" placeholder="http://localhost:11434" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
           <div id="sFallbackWrap" style="grid-column:1/-1"><div class="lbl">If it fails, try these in order</div><div id="fbList" class="flex flex-col mt-1"></div><div class="hint mt-1">Used when the provider can't be reached, times out, or hits a rate limit. Jade switches back automatically when it returns.</div></div>
           <div data-prov="llamacpp"><label class="lbl" for="sLcppHost">llama.cpp server address</label><input id="sLcppHost" class="field mt-1" placeholder="http://localhost:8080" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
@@ -898,6 +898,7 @@ body[data-jade-theme="custom-gradient"] .jade-theme-label{background:var(--theme
           <div data-prov="groq"><label class="lbl" for="sGroqKey">Groq API key</label><input id="sGroqKey" type="password" class="field mt-1" autocomplete="off" placeholder="gsk_… from console.groq.com/keys"></div>
           <div data-prov="openai"><label class="lbl" for="sOaiHost">Base URL</label><input id="sOaiHost" class="field mt-1" placeholder="https://api.example.com/v1" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
           <div data-prov="openai"><label class="lbl" for="sOaiKey">API key</label><input id="sOaiKey" type="password" class="field mt-1" autocomplete="off"></div>
+          <div data-prov="openrouter"><label class="lbl" for="sOrKey">OpenRouter API key</label><input id="sOrKey" type="password" class="field mt-1" autocomplete="off" placeholder="sk-or-… from openrouter.ai/keys" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
           <div data-prov="aicord"><label class="lbl" for="sAicKey">AICord API key</label><input id="sAicKey" type="password" class="field mt-1" autocomplete="off" placeholder="your AICord authorization token" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
           <div><label class="lbl" for="sModel">Model</label><div class="flex gap-2 mt-1"><select id="sModel" class="field"></select><button class="btn" id="btnRefresh">Scan</button></div></div>
           <div><label class="lbl" for="sTemp">Temperature</label><input id="sTemp" type="number" step="0.1" min="0" max="2" class="field mt-1"></div>
@@ -936,7 +937,7 @@ body[data-jade-theme="custom-gradient"] .jade-theme-label{background:var(--theme
           <div><label class="lbl" for="sHbEnd">Until</label><input id="sHbEnd" type="time" class="field mt-1"></div>
         </div>
         <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
-          <div><label class="lbl" for="sHbProv">Heartbeat model</label><select id="sHbProv" class="field mt-1"><option value="">Same as the chat model</option><option value="local">Ollama on my computer</option><option value="llamacpp">llama.cpp server</option><option value="cloud">Ollama Cloud</option><option value="groq">Groq</option><option value="openai">OpenAI-compatible</option><option value="aicord">AICord (character chat)</option></select></div>
+          <div><label class="lbl" for="sHbProv">Heartbeat model</label><select id="sHbProv" class="field mt-1"><option value="">Same as the chat model</option><option value="local">Ollama on my computer</option><option value="llamacpp">llama.cpp server</option><option value="cloud">Ollama Cloud</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option><option value="openai">OpenAI-compatible</option><option value="aicord">AICord (character chat)</option></select></div>
           <div id="sHbModelWrap" hidden><label class="lbl" for="sHbModel">Model</label><div class="flex gap-2 mt-1"><select id="sHbModel" class="field"></select><button type="button" class="btn" id="btnHbScan">Scan</button></div></div>
           <div><label class="lbl" for="sHbChat">Where it runs</label><select id="sHbChat" class="field mt-1"><option value="own">Its own “♥ Heartbeat” chat</option><option value="current">The chat that is open</option></select></div>
         </div>
@@ -1019,7 +1020,7 @@ body[data-jade-theme="custom-gradient"] .jade-theme-label{background:var(--theme
           <div><label class="lbl" for="sCompactAfter">Compact after this many turns</label><input id="sCompactAfter" type="number" min="2" max="200" step="1" class="field mt-1"></div>
           <div><label class="lbl" for="sCompactKeep">Recent turns kept word for word</label><input id="sCompactKeep" type="number" min="0" max="20" step="1" class="field mt-1"></div>
           <div><label class="lbl" for="sCompactPct">Also compact when context is this full (%)</label><input id="sCompactPct" type="number" min="40" max="98" step="1" class="field mt-1"></div>
-          <div><label class="lbl" for="sAuxProv">Model for compaction & journal</label><select id="sAuxProv" class="field mt-1"><option value="">Same as the chat model</option><option value="local">Ollama on my computer</option><option value="llamacpp">llama.cpp server</option><option value="cloud">Ollama Cloud</option><option value="groq">Groq</option><option value="openai">OpenAI-compatible</option><option value="aicord">AICord (character chat)</option></select></div>
+          <div><label class="lbl" for="sAuxProv">Model for compaction & journal</label><select id="sAuxProv" class="field mt-1"><option value="">Same as the chat model</option><option value="local">Ollama on my computer</option><option value="llamacpp">llama.cpp server</option><option value="cloud">Ollama Cloud</option><option value="groq">Groq</option><option value="openrouter">OpenRouter</option><option value="openai">OpenAI-compatible</option><option value="aicord">AICord (character chat)</option></select></div>
           <div id="sAuxModelWrap" hidden><label class="lbl" for="sAuxModel">Model</label><div class="flex gap-2 mt-1"><select id="sAuxModel" class="field"></select><button type="button" class="btn" id="btnAuxScan">Scan</button></div></div>
         </div>
         <p class="hint leading-relaxed">A small, fast model is usually enough for summaries and saves your main model's time. If it fails, the chat model is used. A turn is one message from you plus everything the agent does in reply. Type <span class="text-yl">/compact</span> to compact now.</p>
@@ -1061,7 +1062,7 @@ body[data-jade-theme="custom-gradient"] .jade-theme-label{background:var(--theme
         <p class="text-sm leading-relaxed text-[#c2d6ce]">Ollaya, or Ollama 0.35 and newer, runs decision models locally. It doesn't write text: it answers questions you define with calibrated probabilities. When it's on, the agent gets a <span class="mono text-yl">decide</span> tool for triage, classification, scoring and yes/no checks. Ollama still does the chatting.</p>
         <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
           <label class="flex items-center gap-2 text-sm" for="sOllayaOn"><input type="checkbox" id="sOllayaOn" class="accent-emerald-400 w-4 h-4"> Give the agent the decide tool</label>
-          <div><label class="lbl" for="sDecideProv">Server</label><select id="sDecideProv" class="field mt-1"><option value="ollaya">Ollaya</option><option value="ollama">Ollama (0.35+)</option></select></div>
+          <div><label class="lbl" for="sDecideProv">Server</label><select id="sDecideProv" class="field mt-1"><option value="ollaya">Ollaya</option><option value="ollama">Ollama (0.35+)</option><option value="openrouter">OpenRouter (any model with log probabilities)</option></select></div>
           <div><label class="lbl" for="sOllayaHost">Address</label><input id="sOllayaHost" class="field mt-1" placeholder="http://localhost:11435"></div>
           <div><label class="lbl" for="sOllayaModel">Decision model</label><div class="flex gap-2 mt-1"><select id="sOllayaModel" class="field"></select><button class="btn" id="btnOllayaScan">Scan</button></div></div>
           <div><label class="lbl" for="sOllayaKey">API key (only if the server needs one)</label><input id="sOllayaKey" type="password" class="field mt-1" placeholder="optional"></div>
@@ -1077,7 +1078,7 @@ body[data-jade-theme="custom-gradient"] .jade-theme-label{background:var(--theme
           <div><label class="lbl" for="sRouterMin">Main model when less sure than (0–1)</label><input id="sRouterMin" type="number" min="0" max="1" step="0.05" class="field mt-1" placeholder="0"></div>
         </div>
         <div><label class="lbl" for="sRouterModels">Models, one per line: provider | model | what it is good at</label><textarea id="sRouterModels" rows="4" class="field mt-1 mono" placeholder="local | qwen3:8b | quick everyday chat, short answers, simple lookups&#10;groq | openai/gpt-oss-120b | coding, long documents, hard multi-step reasoning"></textarea>
-        <p class="hint">Providers: local (Ollama), cloud (Ollama Cloud), groq, llamacpp, openai (the OpenAI-compatible endpoint), aicord, each with its key and address from Model provider. Leave the provider out to use the main one.</p></div>
+        <p class="hint">Providers: local (Ollama), cloud (Ollama Cloud), groq, llamacpp, openrouter (model ids like openai/gpt-4o-mini), openai (the OpenAI-compatible endpoint), aicord, each with its key and address from Model provider. Leave the provider out to use the main one.</p></div>
         <div class="flex gap-2 items-center flex-wrap"><input id="sRouterTry" class="field" style="flex:1;min-width:200px" placeholder="A message to try (empty: a coding question)"><button class="btn btn-cy" id="btnRouterTest">Test routing</button><span class="hint" id="routerNote"></span></div>
       </section>
 
@@ -1365,7 +1366,7 @@ const idb = (() => {
 })();
 
 /* ---------------- settings ---------------- */
-const DEFAULTS = { toolRouter: 'auto', abOn: false, abUrl: '', abToken: '', abHours: 24, abKind: 'full', abKeys: false, abEncrypt: false, abPass: '', curiosityOn: false, cuMin: 45, cuMax: 180, cuFrom: '08:00', cuTo: '22:00', cuCap: 5, cuTools: 'web', cuActsOff: [], delegateOn: true, thinkOn: true, sshOn: true, sshHosts: [], hfSolo: true, wakeWords: '', browserOn: true, screenOn: true, phoneOn: true, sentryOn: true, sentryAllow: '', sentryLimit: 6, askRisky: true, sensesOn: true, voiceLang: '', sttOffline: false, visProv: '', visModel: '', sttProv: '', sttModel: '', vadMs: 900, tplOn: true, tplTools: false, tplDir: '/Templates', apiOn: false, apiPort: 8787, apiLan: false, apiToken: '', provider: 'local', fallbacks: [], fallbackOrder: ['local', 'llamacpp', 'cloud', 'groq', 'openai', 'aicord'], lcppHost: 'http://localhost:8080', lcppKey: '', aicKey: '', hbOn: false, hbEvery: 30, hbStart: '08:00', hbEnd: '22:00', hbChat: 'own', hbPrompt: '', hbProv: '', hbModel: '', auxProv: '', auxModel: '', bgMode: 'agent', bgNotify: true, groqKey: '', oaiHost: '', oaiKey: '', modelBy: {}, memoryOn: true, memoryRag: true, memoryRagK: 8, journalOn: true, embedOn: true, embedModel: 'nomic-embed-text', embedHost: '', embedKey: '', embedNotes: false, compactAuto: true, compactAfter: 8, compactKeep: 2, compactPct: 85, jadeCompact: false, jadeShow: true, jadeVoice: false, voiceName: '', voicePitch: 1.25, voiceRate: 1.03, jadeFrame: 'portrait', jadeTheme: 'jade', jadeSpectrum: '#bd72f3', jadeGradientStart: '#f34b68', jadeGradientEnd: '#62a4ff', jadeGradientDirection: 'vertical', jadeHairMode: 'original', jadeHairColor: '#342c3c', jadeHairEnd: '#b58af4', jadeHairDirection: 'vertical', jadeClothesMode: 'original', jadeClothesColor: '#382f47', jadeClothesEnd: '#62a4ff', jadeClothesDirection: 'vertical', jadeStockingsMode: 'original', jadeStockingsColor: '#252330', jadeStockingsEnd: '#9c86bc', jadeStockingsDirection: 'vertical', jadeBootsMode: 'original', jadeBootsColor: '#20212a', jadeBootsEnd: '#f4c95d', jadeBootsDirection: 'vertical', jadeSkinMode: 'original', jadeSkinTone: 'fair', jadeSkinColor: '#d29b7c', jadeSkinEnd: '#f1d0c5', jadeSkinDirection: 'vertical', ollayaOn: false, ollayaHost: 'http://localhost:11435', ollayaModel: '', ollayaKey: '', decideProv: 'ollaya', decideOllamaHost: '', host: 'http://localhost:11434', model: '', temperature: 0.2, numCtx: 16384, think: false, maxTurns: 40, bbUrl: '', engine: 'auto', search: 'auto', ollamaKey: '', searx: '' };
+const DEFAULTS = { toolRouter: 'auto', abOn: false, abUrl: '', abToken: '', abHours: 24, abKind: 'full', abKeys: false, abEncrypt: false, abPass: '', curiosityOn: false, cuMin: 45, cuMax: 180, cuFrom: '08:00', cuTo: '22:00', cuCap: 5, cuTools: 'web', cuActsOff: [], delegateOn: true, thinkOn: true, sshOn: true, sshHosts: [], hfSolo: true, wakeWords: '', browserOn: true, screenOn: true, phoneOn: true, sentryOn: true, sentryAllow: '', sentryLimit: 6, askRisky: true, sensesOn: true, voiceLang: '', sttOffline: false, visProv: '', visModel: '', sttProv: '', sttModel: '', vadMs: 900, tplOn: true, tplTools: false, tplDir: '/Templates', apiOn: false, apiPort: 8787, apiLan: false, apiToken: '', provider: 'local', fallbacks: [], fallbackOrder: ['local', 'llamacpp', 'cloud', 'groq', 'openrouter', 'openai', 'aicord'], lcppHost: 'http://localhost:8080', lcppKey: '', aicKey: '', orKey: '', hbOn: false, hbEvery: 30, hbStart: '08:00', hbEnd: '22:00', hbChat: 'own', hbPrompt: '', hbProv: '', hbModel: '', auxProv: '', auxModel: '', bgMode: 'agent', bgNotify: true, groqKey: '', oaiHost: '', oaiKey: '', modelBy: {}, memoryOn: true, memoryRag: true, memoryRagK: 8, journalOn: true, embedOn: true, embedModel: 'nomic-embed-text', embedHost: '', embedKey: '', embedNotes: false, compactAuto: true, compactAfter: 8, compactKeep: 2, compactPct: 85, jadeCompact: false, jadeShow: true, jadeVoice: false, voiceName: '', voicePitch: 1.25, voiceRate: 1.03, jadeFrame: 'portrait', jadeTheme: 'jade', jadeSpectrum: '#bd72f3', jadeGradientStart: '#f34b68', jadeGradientEnd: '#62a4ff', jadeGradientDirection: 'vertical', jadeHairMode: 'original', jadeHairColor: '#342c3c', jadeHairEnd: '#b58af4', jadeHairDirection: 'vertical', jadeClothesMode: 'original', jadeClothesColor: '#382f47', jadeClothesEnd: '#62a4ff', jadeClothesDirection: 'vertical', jadeStockingsMode: 'original', jadeStockingsColor: '#252330', jadeStockingsEnd: '#9c86bc', jadeStockingsDirection: 'vertical', jadeBootsMode: 'original', jadeBootsColor: '#20212a', jadeBootsEnd: '#f4c95d', jadeBootsDirection: 'vertical', jadeSkinMode: 'original', jadeSkinTone: 'fair', jadeSkinColor: '#d29b7c', jadeSkinEnd: '#f1d0c5', jadeSkinDirection: 'vertical', ollayaOn: false, ollayaHost: 'http://localhost:11435', ollayaModel: '', ollayaKey: '', decideProv: 'ollaya', decideOllamaHost: '', host: 'http://localhost:11434', model: '', temperature: 0.2, numCtx: 16384, think: false, maxTurns: 40, bbUrl: '', engine: 'auto', search: 'auto', ollamaKey: '', searx: '' };
 const S = Object.assign({}, DEFAULTS, ls.get('settings', {}));
 const saveSettings = () => { if (window.__restoring) return; S._savedAt = Date.now(); if (window.__modelOverride) { settingsStore({ ...S, model: window.__modelOverride.model ?? S.model }); return; } if (activeProv && S.model) (S.modelBy ||= {})[activeProv] = S.model; settingsStore(S); };
 function settingsStore(o) { ls.set('settings', o); try { idb.set('settingsMirror', JSON.parse(JSON.stringify(o))); } catch {} }
@@ -3642,6 +3643,7 @@ const PROVIDERS = {
   cloud: { label: 'Ollama Cloud', chip: 'OLLAMA CLOUD' },
   groq: { label: 'Groq', chip: 'GROQ' },
   llamacpp: { label: 'llama.cpp', chip: 'LLAMA.CPP' },
+  openrouter: { label: 'OpenRouter', chip: 'OPENROUTER' },
   openai: { label: 'OpenAI-compatible', chip: 'API' },
   aicord: { label: 'AICord', chip: 'AICORD' },
 };
@@ -3679,13 +3681,13 @@ function toOpenAIMessages(msgs) {
   return out;
 }
 class OpenAICompat {
-  constructor({ base, key, name }) { this.base = String(base || '').replace(/\/+$/, ''); this.key = key; this.name = name; this.ctrls = new Set(); }
-  get headers() { const h = { 'Content-Type': 'application/json' }; if (this.key) h.Authorization = 'Bearer ' + this.key; return h; }
+  constructor({ base, key, name, headers = {} }) { this.base = String(base || '').replace(/\/+$/, ''); this.key = key; this.name = name; this.extra = headers; this.ctrls = new Set(); }
+  get headers() { const h = { 'Content-Type': 'application/json', ...this.extra }; if (this.key) h.Authorization = 'Bearer ' + this.key; return h; }
   abort() { for (const c of this.ctrls) c.abort(); this.ctrls.clear(); }
   async err(r) { let m = `HTTP ${r.status}`; try { const j = await r.json(); m = j.error?.message || j.error || j.message || m; if (j.error?.failed_generation) m += ` (model output: ${String(j.error.failed_generation).slice(0, 200)})`; } catch {} if (r.status === 401) m = `${this.name} rejected the API key (401)`; if (r.status === 429) m = `${this.name} rate limit: ${m}`; return new Error(m); }
   async list() {
     const r = await fetch(this.base + '/models', { headers: this.headers }); if (!r.ok) throw await this.err(r);
-    const j = await r.json(); const ids = (j.data || j.models || []).map(m => m.id || m.name).filter(Boolean)
+    const j = await r.json(); const ids = (j.data || j.models || []).filter(m => !Array.isArray(m.supported_parameters) || m.supported_parameters.includes('tools')).map(m => m.id || m.name).filter(Boolean)   // OpenRouter says which models take tools
       .filter(id => !/whisper|tts|-guard|guard-|playai|orpheus|embed|distil|moderation|dall-e|image|audio|transcri/i.test(id));
     return { models: ids.map(name => ({ name })) };
   }
@@ -3799,6 +3801,7 @@ function makeClientFor(p, c = S) {
   if (p === 'groq') return new OpenAICompat({ base: 'https://api.groq.com/openai/v1', key: c.groqKey, name: 'Groq' });
   if (p === 'llamacpp') return new OpenAICompat({ base: (c.lcppHost || 'http://localhost:8080').replace(/\/+$/, '').replace(/(\/v1)?$/, '/v1'), key: c.lcppKey, name: 'llama.cpp' });
   if (p === 'aicord') { const old = aicordClient; const c = new AICordClient({ key: c0.aicKey }); if (old && old.key === c.key) c.chars = old.chars; return aicordClient = c; }
+  if (p === 'openrouter') return new OpenAICompat({ base: OR_BASE, key: c.orKey, name: 'OpenRouter', headers: OR_HEADERS });
   if (p === 'openai') return new OpenAICompat({ base: c.oaiHost, key: c.oaiKey, name: (() => { try { return new URL(c.oaiHost).host; } catch { return 'the API'; } })() });
   const host = c.host || DEFAULTS.host; const cl = OllamaLib ? new OllamaLib({ host }) : new FetchOllama({ host }); cl._lib = !!OllamaLib; cl._base = host.replace(/\/+$/, ''); cl.headers = {}; return cl;
 }
@@ -3807,6 +3810,7 @@ function providerMissing(p, c = S) {
   if (p === 'groq' && !c.groqKey) return 'no Groq API key set (Config → Model provider)';
   if (p === 'llamacpp' && c.lcppHost && !/^https?:\/\//.test(c.lcppHost)) return 'the llama.cpp address must start with http:// or https://';
   if (p === 'aicord' && !c.aicKey) return 'no AICord API key set (Config → Model provider)';
+  if (p === 'openrouter' && !c.orKey) return 'no OpenRouter API key set (Config → Model provider)';
   if (p === 'openai' && !/^https?:\/\//.test(c.oaiHost || '')) return 'no base URL set for the OpenAI-compatible endpoint';
   return '';
 }
@@ -3966,8 +3970,8 @@ const OLLAMA_TOOLS = TOOL_DEFS.map(t => ({ type: 'function', function: t }));
 const activeTools = () => dcFilterTools(vecFilterTools([...OLLAMA_TOOLS.filter(t => (t.function.name !== 'decide' || (S.ollayaOn && S.ollayaModel)) && (t.function.name !== 'memory' || S.memoryOn) && (t.function.name !== 'embeddings' || (S.memoryOn && S.embedOn !== false))), ...VEC_TOOL_DEFS.map(f => ({ type: 'function', function: f })), ...FLOW_TOOL_DEFS.map(f => ({ type: 'function', function: f })), ...DC_TOOL_DEFS.map(f => ({ type: 'function', function: f })), ...USB_TOOL_DEFS.filter(() => S.usbOn !== false).map(f => ({ type: 'function', function: f })), ...WORLD_TOOL_DEFS.filter(t => (S.sensesOn !== false || t.name === 'look' || t.name === 'litert' || t.name === 'onnx' || t.name === 'browser') && (t.name !== 'browser' || S.browserOn !== false) && (t.name !== 'screen' || S.screenOn !== false) && (t.name !== 'phone' || S.phoneOn !== false) && (t.name !== 'sentry' || S.sentryOn !== false) && (t.name !== 'ssh' || S.sshOn !== false) && (t.name !== 'think' || S.thinkOn !== false) && (t.name !== 'find_skill' || skillRouted()) && (t.name !== 'delegate' || S.delegateOn !== false) && (t.name !== 'chat_history' || S.memoryOn !== false) && (t.name !== 'curiosity' || S.curiosityOn) && (t.name !== 'backup' || S.abOn) && (t.name !== 'playbook' || S.playbookOn !== false)).map(f => ({ type: 'function', function: f })), ...mcpToolDefs()]));
 
 /* ---------------- decision models: Ollaya, or Ollama 0.35+ (same /v1/systemone API) ---------------- */
-const decName = () => S.decideProv === 'ollama' ? 'Ollama' : 'Ollaya';
-const ollayaBase = () => (S.decideProv === 'ollama' ? (S.decideOllamaHost || S.host || DEFAULTS.host) : (S.ollayaHost || DEFAULTS.ollayaHost)).replace(/\/+$/, '');
+const decName = () => S.decideProv === 'ollama' ? 'Ollama' : S.decideProv === 'openrouter' ? 'OpenRouter' : 'Ollaya';
+const ollayaBase = () => S.decideProv === 'openrouter' ? OR_BASE : (S.decideProv === 'ollama' ? (S.decideOllamaHost || S.host || DEFAULTS.host) : (S.ollayaHost || DEFAULTS.ollayaHost)).replace(/\/+$/, '');
 const ollayaHeaders = () => { const h = { 'Content-Type': 'application/json' }; if (S.ollayaKey) h.Authorization = 'Bearer ' + S.ollayaKey; return h; };
 let ollayaModels = [], ollayaState = 'off';
 async function ollayaErr(r) {
@@ -3980,6 +3984,7 @@ async function ollayaErr(r) {
   return msg;
 }
 async function ollayaFetch(path, init = {}) {
+  if (S.decideProv === 'openrouter') return orDecideFetch(path, init);
   try { return await fetch(ollayaBase() + path, { ...init, headers: ollayaHeaders() }); }
   catch (e) { const N = decName(); throw new Error(`could not reach ${N} at ${ollayaBase()}. Is "${N.toLowerCase()} serve" running? If it is, the browser blocked the request: restart it with ${N.toUpperCase()}_ORIGINS="*".`); }
 }
@@ -5807,19 +5812,20 @@ function fillOllayaModels() {
   sel.innerHTML = list.length ? list.map(m => `<option ${m === S.ollayaModel ? 'selected' : ''}>${esc(m)}</option>`).join('') : '<option value="">press Scan</option>';
 }
 // the Address field shows the chosen decision server's address; switching servers keeps each one's draft
-const decDraft = { ollaya: '', ollama: '' };
-const decAddr = (p, v) => ({ [p === 'ollama' ? 'decideOllamaHost' : 'ollayaHost']: v || (p === 'ollama' ? '' : DEFAULTS.ollayaHost) });
+const decDraft = { ollaya: '', ollama: '', openrouter: '' };
+const decAddr = (p, v) => p === 'openrouter' ? {} : ({ [p === 'ollama' ? 'decideOllamaHost' : 'ollayaHost']: v || (p === 'ollama' ? '' : DEFAULTS.ollayaHost) });
 function decFill() {
   const p = $('#sDecideProv').value; $('#sOllayaHost').value = decDraft[p];
-  $('#sOllayaHost').placeholder = p === 'ollama' ? (S.host || DEFAULTS.host) + '  (blank: the Ollama address above)' : DEFAULTS.ollayaHost;
+  $('#sOllayaHost').closest('div').hidden = p === 'openrouter'; $('#sOllayaKey').placeholder = p === 'openrouter' ? 'blank: the OpenRouter key from Model provider' : 'optional'; $('#sOllayaHost').placeholder = p === 'ollama' ? (S.host || DEFAULTS.host) + '  (blank: the Ollama address above)' : DEFAULTS.ollayaHost;
 }
-$('#sDecideProv').onchange = () => { const other = $('#sDecideProv').value === 'ollama' ? 'ollaya' : 'ollama'; decDraft[other] = $('#sOllayaHost').value.trim(); decFill(); };
+let decPrev = null; $('#sDecideProv').onfocus = () => { decPrev = $('#sDecideProv').value; };
+$('#sDecideProv').onchange = () => { if (decPrev) decDraft[decPrev] = $('#sOllayaHost').value.trim(); decPrev = $('#sDecideProv').value; decFill(); };
 const decTry = () => ({ decideProv: $('#sDecideProv').value, ...decAddr($('#sDecideProv').value, $('#sOllayaHost').value.trim()) });
 $('#btnOllayaScan').onclick = async () => {
   const keepD = { decideProv: S.decideProv, ollayaHost: S.ollayaHost, decideOllamaHost: S.decideOllamaHost };
   const prev = S.ollayaHost, prevKey = S.ollayaKey; Object.assign(S, decTry()); S.ollayaKey = $('#sOllayaKey').value.trim();
   $('#ollayaNote').textContent = 'Scanning…';
-  try { const m = await ollayaScan(); fillOllayaModels(); $('#ollayaNote').textContent = m.length ? `Found ${m.length} model${m.length > 1 ? 's' : ''}.` : 'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b'; }
+  try { const m = await ollayaScan(); fillOllayaModels(); $('#ollayaNote').textContent = m.length ? `Found ${m.length} model${m.length > 1 ? 's' : ''}.` : (S.decideProv === 'openrouter' ? 'OpenRouter lists no models with log probabilities right now.' : 'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b'); }
   catch (e) { $('#ollayaNote').textContent = e.message; }
   finally { Object.assign(S, keepD); S.ollayaHost = prev; S.ollayaKey = prevKey; }
 };
@@ -5847,7 +5853,7 @@ function openSettings() { try { routerFill(); } catch {}
   $('#sJadeShow').checked = S.jadeShow; $('#sJadeVoice').checked = S.jadeVoice; fillVoices(); $('#sPitch').value = S.voicePitch; $('#sRate').value = S.voiceRate; showRange();
   $('#sOllayaOn').checked = S.ollayaOn; $('#sDecideProv').value = S.decideProv || 'ollaya'; decDraft.ollaya = S.ollayaHost || ''; decDraft.ollama = S.decideOllamaHost || ''; decFill(); $('#sOllayaKey').value = S.ollayaKey; fillOllayaModels(); $('#ollayaNote').textContent = ''; $('#ollayaResult').hidden = true;
   delAllArmed = false; $('#btnDelAllChats').textContent = 'Delete all chats';
-  $('#sProvider').value = S.provider || 'local'; loadFbDraft(); $('#sCloudKey').value = $('#sCloudKey').dataset.orig = S.ollamaKey || ''; $('#sGroqKey').value = S.groqKey || ''; $('#sOaiHost').value = S.oaiHost || ''; $('#sOaiKey').value = S.oaiKey || ''; $('#sLcppHost').value = S.lcppHost || 'http://localhost:8080'; $('#sLcppKey').value = S.lcppKey || ''; $('#sAicKey').value = S.aicKey || ''; renderFbList(); showProvFields();
+  $('#sProvider').value = S.provider || 'local'; loadFbDraft(); $('#sCloudKey').value = $('#sCloudKey').dataset.orig = S.ollamaKey || ''; $('#sGroqKey').value = S.groqKey || ''; $('#sOaiHost').value = S.oaiHost || ''; $('#sOaiKey').value = S.oaiKey || ''; $('#sLcppHost').value = S.lcppHost || 'http://localhost:8080'; $('#sLcppKey').value = S.lcppKey || ''; $('#sAicKey').value = S.aicKey || ''; $('#sOrKey').value = S.orKey || ''; renderFbList(); showProvFields();
   $('#sHost').value = S.host; $('#sTemp').value = S.temperature; $('#sCtx').value = S.numCtx; $('#sTurns').value = S.maxTurns; $('#sThink').checked = S.think;
   $('#sEngine').value = S.engine; $('#sSearch').value = S.search; $('#sKey').value = S.ollamaKey; $('#sSearx').value = S.searx;
   fillModelSelects(); updateShellChip(); $('#resetNote').textContent = ''; resetArmed = false; $('#btnResetFs').textContent = 'Reset filesystem';
@@ -5859,6 +5865,7 @@ const PROV_HINT = {
   cloud: 'Runs on ollama.com with your account, no computer needed. The key also powers Ollama web search. Keys stay on this device.',
   groq: 'Very fast hosted models. Pick one that supports tool calling (for example a gpt-oss, Kimi K2 or Llama 3.3 70B model). The free tier has rate limits. Keys stay on this device.',
   llamacpp: 'Your own llama-server. Start it with --jinja so tool calling works (for example: llama-server -m model.gguf --jinja --host 0.0.0.0 --port 8080). It lists the model it was started with.',
+  openrouter: 'Hundreds of models (Claude, GPT, Gemini, Llama, Qwen, DeepSeek…) behind one key, paid per token. The model list shows the models that can call tools. Model ids look like anthropic/claude-sonnet-4.5. The key stays on this device.',
   aicord: 'Chat with your AICord characters (pick one under Model). AICord answers as the character: there is no tool calling, so Jade cannot read or edit the vault through it. Best as a chat model or a fallback. Replies arrive whole, not streamed. Uses your AICord credits. The key stays on this device.',
   openai: 'Any server that speaks the OpenAI chat completions API with tools (OpenRouter, Together, LM Studio, vLLM, OpenAI…). Keys stay on this device.',
 };
@@ -5870,14 +5877,14 @@ function showProvFields() {
 }
 function readProvFields() {
   S.provider = $('#sProvider').value; S.fallbackOrder = [...fbDraft.order]; S.fallbacks = fbDraft.order.filter(q => fbDraft.on.has(q) && q !== S.provider);
-  S.groqKey = $('#sGroqKey').value.trim(); S.oaiHost = $('#sOaiHost').value.trim().replace(/\/+$/, ''); S.oaiKey = $('#sOaiKey').value.trim(); S.lcppHost = $('#sLcppHost').value.trim().replace(/\/+$/, '') || 'http://localhost:8080'; S.lcppKey = $('#sLcppKey').value.trim(); S.aicKey = $('#sAicKey').value.trim();
+  S.groqKey = $('#sGroqKey').value.trim(); S.oaiHost = $('#sOaiHost').value.trim().replace(/\/+$/, ''); S.oaiKey = $('#sOaiKey').value.trim(); S.lcppHost = $('#sLcppHost').value.trim().replace(/\/+$/, '') || 'http://localhost:8080'; S.lcppKey = $('#sLcppKey').value.trim(); S.aicKey = $('#sAicKey').value.trim(); S.orKey = $('#sOrKey').value.trim();
   const ck = $('#sCloudKey').value.trim(); if (ck !== ($('#sCloudKey').dataset.orig || '')) { S.ollamaKey = ck; $('#sKey').value = ck; $('#sCloudKey').dataset.orig = ck; }
 }
 // provider settings as currently typed in the form, without touching the live settings
 function formCfg() {
   const c = { ...S }; if ($('#settings').hidden) return c;
   return Object.assign(c, { host: $('#sHost').value.trim() || c.host, groqKey: $('#sGroqKey').value.trim(), oaiHost: $('#sOaiHost').value.trim().replace(/\/+$/, ''), oaiKey: $('#sOaiKey').value.trim(),
-    lcppHost: ($('#sLcppHost')?.value.trim() || 'http://localhost:8080').replace(/\/+$/, ''), lcppKey: $('#sLcppKey')?.value.trim() || '', aicKey: $('#sAicKey')?.value.trim() || '', ollamaKey: $('#sCloudKey').value.trim() || $('#sKey').value.trim() || c.ollamaKey });
+    lcppHost: ($('#sLcppHost')?.value.trim() || 'http://localhost:8080').replace(/\/+$/, ''), lcppKey: $('#sLcppKey')?.value.trim() || '', aicKey: $('#sAicKey')?.value.trim() || '', orKey: $('#sOrKey')?.value.trim() || '', ollamaKey: $('#sCloudKey').value.trim() || $('#sKey').value.trim() || c.ollamaKey });
 }
 $('#sProvider').onchange = () => { renderFbList(); showProvFields(); };
 $('#btnOpenMemory').onclick = () => { closeSettings(); ensureMemory(); openFile(MEM_PATH, { mode: 'read' }); };
@@ -6470,7 +6477,7 @@ $('#slashSuggest').addEventListener('click', e => { const b = e.target.closest('
 // migrate the single fallback from v1.3 to the ordered list
 if (!Array.isArray(S.fallbacks)) S.fallbacks = [];
 if (S.fallback && !S.fallbacks.length) { S.fallbacks = [S.fallback]; delete S.fallback; }
-S.fallbackOrder = [...new Set([...(Array.isArray(S.fallbackOrder) ? S.fallbackOrder : []), ...S.fallbacks, 'local', 'llamacpp', 'cloud', 'groq', 'openai', 'aicord'])].filter(p => PROVIDERS[p]);
+S.fallbackOrder = [...new Set([...(Array.isArray(S.fallbackOrder) ? S.fallbackOrder : []), ...S.fallbacks, 'local', 'llamacpp', 'cloud', 'groq', 'openrouter', 'openai', 'aicord'])].filter(p => PROVIDERS[p]);
 
 /* ---------- fallback list editor (Config → Model provider) ---------- */
 const fbDraft = { order: [], on: new Set() };
@@ -6508,7 +6515,7 @@ $('#sAuxProv').onchange = () => { $('#sAuxModel').dataset.want = ''; fillAuxMode
 $('#btnAuxScan').onclick = () => fillAuxModels(true);
 
 /* ---------- backup: export / import everything as JSON ---------- */
-const SECRET_KEYS = ['ollamaKey', 'groqKey', 'oaiKey', 'lcppKey', 'ollayaKey', 'mcpSecrets', 'secrets', 'vecToken', 'aicKey', 'dcToken', 'embedKey', 'sshHosts', 'abToken', 'abPass'];
+const SECRET_KEYS = ['ollamaKey', 'groqKey', 'oaiKey', 'lcppKey', 'ollayaKey', 'mcpSecrets', 'secrets', 'vecToken', 'aicKey', 'orKey', 'dcToken', 'embedKey', 'sshHosts', 'abToken', 'abPass'];
 const b64enc = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
 const b64dec = b => { const s = atob(b); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; };
 function rawDb() { return new Promise((res, rej) => { const r = indexedDB.open('jade-vault', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
@@ -16712,6 +16719,108 @@ function autoSeedSkill() {
 }
 setTimeout(() => { autoWire(); autoSeedSkill(); autoStart(); }, 1900);
 Object.assign(window, { AUTO, autoStart, autoAdd, autoPick, autoRun, autoTick, autoUsed, autoBlocked, autoQuiet, autoSet, autoStopNow, autoLoad, autoSave, autoFromGantt, autoStatus, autoEffPrio, schedTool, schedInterrupt, openQueue, autoRender, autoSeedSkill, AUTO_SKILL });
+
+/* =====================================================================
+   OPENROUTER: a model provider (hundreds of models behind one key) and a decision server
+   ===================================================================== */
+// As a provider it is the OpenAI-compatible client (providers.js) with OpenRouter's address, its attribution headers and
+// a model list cut to models that can call tools. As a decision server it answers the same /v1/systemone requests as
+// Ollaya and Ollama, so the decide tool, scripts' jade.decide and the model router work unchanged: the options are
+// lettered A, B, C…, the model answers with one letter, and the probabilities are read from that token's log
+// probabilities (only models that report them are offered). A model that returns none falls back to asking for
+// probabilities as JSON.
+const OR_BASE = 'https://openrouter.ai/api/v1';
+const OR_HEADERS = { 'HTTP-Referer': 'https://lucky-edgelord.github.io/jade-vault/', 'X-Title': 'Jade Vault' };
+let orModelCache = null, orModelAt = 0;
+async function orModelList() {
+  if (orModelCache && Date.now() - orModelAt < 10 * 60e3) return orModelCache;
+  const r = await fetch(OR_BASE + '/models', { headers: OR_HEADERS });
+  if (!r.ok) throw new Error(`OpenRouter: HTTP ${r.status} listing models`);
+  const j = await r.json(); orModelCache = j.data || []; orModelAt = Date.now();
+  return orModelCache;
+}
+// for the chat: models that can call tools; for decisions: models that report log probabilities
+async function orModels(kind = 'tools') {
+  const all = await orModelList();
+  const want = kind === 'logprobs' ? ['logprobs', 'top_logprobs'] : ['tools'];
+  return all.filter(m => !Array.isArray(m.supported_parameters) || want.every(p => m.supported_parameters.includes(p))).map(m => m.id).filter(Boolean).sort();
+}
+const orKeyFor = () => (S.decideProv === 'openrouter' && S.ollayaKey) || S.orKey || '';
+async function orPost(path, body, key) {
+  let r;
+  try { r = await fetch(OR_BASE + path, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key, ...OR_HEADERS }, body: JSON.stringify(body) }); }
+  catch (e) { throw new Error('could not reach OpenRouter: ' + (e.message || e)); }
+  const text = await r.text(); let j = {}; try { j = JSON.parse(text); } catch {}
+  if (!r.ok || j.error) {
+    const m = j.error?.message || j.error || text.slice(0, 300) || 'HTTP ' + r.status;
+    const e = new Error(r.status === 401 ? 'OpenRouter rejected the API key (401)' : r.status === 402 ? 'OpenRouter: no credits left (402)' : `OpenRouter: ${m}`); e.status = r.status || 502; throw e;
+  }
+  return j;
+}
+const OR_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+// one /v1/systemone question, answered by an OpenRouter model: { model, answers: { q: { choice | score | noul, probabilities, confidence } } }
+async function orSystemone(body) {
+  const key = orKeyFor(); if (!key) { const e = new Error('no OpenRouter API key set (Config → Model provider → OpenRouter, or the key field under Decision models)'); e.status = 401; throw e; }
+  const model = body.model; const out = {};
+  for (const [name, q] of Object.entries(body.questions || {})) {
+    const t = q.type || 'choice';
+    const opts = t === 'noul' ? ['no', 'yes'] : (q.criteria || []).map(String);
+    if (opts.length < 2) throw Object.assign(new Error(`question ${name}: needs at least 2 options`), { status: 400 });
+    if (opts.length > OR_LETTERS.length) throw Object.assign(new Error(`question ${name}: OpenRouter decisions take at most ${OR_LETTERS.length} options`), { status: 400 });
+    const L = opts.map((_, i) => OR_LETTERS[i]);
+    const ask = t === 'noul' ? `${q.instructions}\n\nA. no\nB. yes` : t === 'score' ? `${q.instructions}\n\nLevels, lowest first:\n${opts.map((o, i) => `${L[i]}. ${o}`).join('\n')}` : `${q.instructions}\n\nOptions:\n${opts.map((o, i) => `${L[i]}. ${o}`).join('\n')}`;
+    const messages = [
+      { role: 'system', content: 'You are a careful, calibrated classifier. Read the text, then answer the question with the letter of the best option and nothing else.' },
+      { role: 'user', content: `Text:\n${String(body.state ?? '').slice(0, 24000)}\n\nQuestion: ${ask}\n\nAnswer with one letter (${L[0]}-${L[L.length - 1]}).` },
+    ];
+    const j = await orPost('/chat/completions', { model, messages, temperature: 0, max_tokens: 1, logprobs: true, top_logprobs: 20 }, key);
+    const ch = j.choices?.[0] || {};
+    let probs = orProbsFromLogprobs(ch.logprobs, L);
+    if (!probs) probs = await orProbsFromJson(model, messages, L, key, String(ch.message?.content || ''));
+    let best = 0; probs.forEach((p, i) => { if (p > probs[best]) best = i; });
+    const a = { type: t, probabilities: Object.fromEntries(opts.map((o, i) => [t === 'noul' ? o : String(i), +probs[i].toFixed(6)])), confidence: +probs[best].toFixed(6) };
+    if (t === 'choice') a.choice = best;
+    else if (t === 'score') { a.score = best; a.legend = opts[best]; }
+    else a.noul = best === 1;
+    out[name] = a;
+  }
+  return { model, answers: out, via: 'openrouter' };
+}
+function orProbsFromLogprobs(lp, L) {
+  const first = lp?.content?.[0]; if (!first) return null;
+  const cands = [...(first.top_logprobs || []), { token: first.token, logprob: first.logprob }];
+  const p = L.map(() => 0); let seen = false; const used = new Set();
+  for (const c of cands) {
+    const tok = String(c.token || '').trim().replace(/[.):\s]+$/, '').toUpperCase(); const i = L.indexOf(tok);
+    if (i < 0 || used.has(tok + '|' + c.logprob) || typeof c.logprob !== 'number') continue;
+    used.add(tok + '|' + c.logprob); p[i] += Math.exp(c.logprob); seen = true;
+  }
+  if (!seen) return null;
+  const s = p.reduce((a, b) => a + b, 0); return p.map(x => x / s);
+}
+async function orProbsFromJson(model, messages, L, key, said) {
+  try {
+    const j = await orPost('/chat/completions', { model, temperature: 0, max_tokens: 400, response_format: { type: 'json_object' }, messages: [...messages.slice(0, 1), { role: 'user', content: messages[1].content.replace(/\n\nAnswer with one letter[\s\S]*$/, '') + `\n\nReply with JSON only: {"probabilities": {${L.map(l => `"${l}": number`).join(', ')}}}, your probability for each option, summing to 1.` }] }, key);
+    const txt = String(j.choices?.[0]?.message?.content || '').replace(/^```(json)?|```$/g, '');
+    const o = JSON.parse(txt.slice(txt.indexOf('{'), txt.lastIndexOf('}') + 1)).probabilities || {};
+    const p = L.map(l => Math.max(0, +o[l] || 0)); const s = p.reduce((a, b) => a + b, 0);
+    if (s > 0) return p.map(x => x / s);
+  } catch {}
+  const i = L.indexOf(said.trim().charAt(0).toUpperCase());   // only the letter: all of the weight on it
+  return L.map((_, k) => (i < 0 ? 1 / L.length : k === i ? 1 : 0));
+}
+// what ollayaFetch returns when the decision server is OpenRouter: a Response, as if from Ollaya
+async function orDecideFetch(path, init = {}) {
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json' } });
+  try {
+    if (path === '/api/tags') return json({ models: (await orModels('logprobs')).map(name => ({ name })) });
+    if (path === '/v1/systemone') return json(await orSystemone(JSON.parse(init.body || '{}')));
+    return json({ error: `OpenRouter has no ${path}` }, 404);
+  } catch (e) { return json({ error: String(e.message || e) }, e.status || 502); }
+}
+Object.assign(window, { OR_BASE, OR_HEADERS, orModels, orModelList, orSystemone, orDecideFetch, orProbsFromLogprobs });
+// for tests and scripts (these live in the app's main script scope)
+setTimeout(() => { for (const [n, f] of [['makeClientFor', () => makeClientFor], ['providerMissing', () => providerMissing], ['tryProvider', () => tryProvider], ['ollayaScan', () => ollayaScan], ['decName', () => decName], ['SECRET_KEYS', () => SECRET_KEYS]]) { try { window[n] = f(); } catch {} } }, 0);
 
 /* =====================================================================
    BOOT
