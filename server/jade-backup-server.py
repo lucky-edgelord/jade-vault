@@ -155,9 +155,12 @@ def make_handler(store, token, log):
                         chunk = self.rfile.read(min(1 << 20, n - got))
                         if not chunk: break
                         f.write(chunk); h.update(chunk); got += len(chunk)
+                # a refused upload is deleted before the answer goes out, so "nothing was stored" is already true when the client reads it
                 if got != n:
+                    os.remove(tmp); tmp = None
                     self.close_connection = True; return self.send(400, {'error': f'upload cut off after {got} of {n} bytes; nothing was stored'})
                 if want and not hmac.compare_digest(want, h.hexdigest()):
+                    os.remove(tmp); tmp = None
                     return self.send(422, {'error': 'checksum mismatch; nothing was stored', 'sha256': h.hexdigest()})
                 with store.lock:
                     os.replace(tmp, store.path(name)); tmp = None

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.28.0
+
+- **Decisions and the model router on Ollama Cloud.** Config → Decision models → Server → Ollama Cloud: the decision models (laya, jev…) run on ollama.com's `/v1/systemone` with your Ollama Cloud key (the provider key; a key in the Decision models field wins). Scan lists the models. `decide`, scripts' `jade.decide()`, flow Decide steps and the model router use it, and the router can still route turns to Ollama Cloud models.
+- Backup server: a refused upload (cut off, or a checksum mismatch) is deleted before the error goes back, not just after, so the client never sees its temporary file.
+
 ## 2.27.0
 
 - **OpenRouter is a model provider.** Config → Model provider → OpenRouter: one key (`sk-or-…`) for hundreds of hosted models (Claude, GPT, Gemini, Llama, Qwen, DeepSeek…). The model list shows the models that can call tools; model ids look like `anthropic/claude-sonnet-4.5`. It works as the main provider, a fallback, the heartbeat and compaction model, and in the model router (`openrouter | anthropic/claude-sonnet-4.5 | hard coding`). OpenRouter's attribution headers are sent, and the key is kept out of exports like the other keys.

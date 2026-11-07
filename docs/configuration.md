@@ -37,6 +37,10 @@ The configured primary provider is tried first, then the fallback providers in o
 - Tool calling, image input, output quality, and context size depend on the selected model/provider.
 - Context guard can compact or trim history and learn limits; it does not make a small model's context unlimited.
 
+## Decisions on Ollama Cloud
+
+Choose **Ollama Cloud** under Config → Decision models → Server to run the decision models (laya, jev…) on ollama.com instead of your own Ollaya or Ollama. It uses the Ollama Cloud key from Model provider (a key typed in the Decision models key field wins). **Scan** lists the models your key can use. `decide`, `jade.decide()`, flow Decide steps and the model router (Config → Model router; its decider can be a cloud model such as `jev`) all go there.
+
 ## Decisions through OpenRouter
 
 Choose **OpenRouter** under Config → Decision models → Server to answer `decide`, `jade.decide()`, flow Decide steps and the model router with an OpenRouter model. **Scan** lists the models that report log probabilities (for example `openai/gpt-4o-mini`). The options are lettered A, B, C…, the model answers with one letter, and the probabilities come from that token's log probabilities, normalised over the options; a model that returns none is asked for its probabilities as JSON instead. Up to 26 options. The key field may stay blank to use the OpenRouter key from Model provider. Every decision is a paid request to OpenRouter.
@@ -49,7 +53,7 @@ Under **Customize Jade's appearance**, hair, clothes, stockings, and boots can e
 
 ## Other model settings
 
-Choose context and generation settings conservatively for your model and hardware. Decision models (Ollaya, Ollama 0.35+ on the same `/v1/systemone` API, or OpenRouter; Config → Decision models → Server) are a separate classification/decision capability used by `jade.decide()` and flow Decide steps; configure that service before relying on them. Heartbeat can use its own provider/model settings. A separate compaction model can also be selected; choose one suitable for summarizing the same private context as the chat model.
+Choose context and generation settings conservatively for your model and hardware. Decision models (Ollaya, Ollama 0.35+ on the same `/v1/systemone` API, Ollama Cloud with its hosted decision models such as laya and jev, or OpenRouter; Config → Decision models → Server) are a separate classification/decision capability used by `jade.decide()` and flow Decide steps; configure that service before relying on them. Heartbeat can use its own provider/model settings. A separate compaction model can also be selected; choose one suitable for summarizing the same private context as the chat model.
 
 ## Credentials and secrets
 

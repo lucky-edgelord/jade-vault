@@ -2108,6 +2108,20 @@ rep("$('#sDecideProv').onchange = () => { const other = $('#sDecideProv').value 
 rep("$('#sOllayaHost').placeholder = p === 'ollama' ?", "$('#sOllayaHost').closest('div').hidden = p === 'openrouter'; $('#sOllayaKey').placeholder = p === 'openrouter' ? 'blank: the OpenRouter key from Model provider' : 'optional'; $('#sOllayaHost').placeholder = p === 'ollama' ?")
 rep("'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b'", "(S.decideProv === 'openrouter' ? 'OpenRouter lists no models with log probabilities right now.' : 'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b')")
 
+# ================= v2.28: Ollama Cloud as a decision server (laya, jev… on ollama.com's /v1/systemone) =================
+rep("const decName = () => S.decideProv === 'ollama' ? 'Ollama' : S.decideProv === 'openrouter' ? 'OpenRouter' : 'Ollaya';",
+    "const decName = () => S.decideProv === 'ollama' ? 'Ollama' : S.decideProv === 'cloud' ? 'Ollama Cloud' : S.decideProv === 'openrouter' ? 'OpenRouter' : 'Ollaya';")
+rep("const ollayaBase = () => S.decideProv === 'openrouter' ? OR_BASE : (", "const ollayaBase = () => S.decideProv === 'openrouter' ? OR_BASE : S.decideProv === 'cloud' ? 'https://ollama.com' : (")
+rep("const ollayaHeaders = () => { const h = { 'Content-Type': 'application/json' }; if (S.ollayaKey) h.Authorization = 'Bearer ' + S.ollayaKey; return h; };",
+    "const ollayaHeaders = () => { const h = { 'Content-Type': 'application/json' }; const k = S.ollayaKey || (S.decideProv === 'cloud' ? S.ollamaKey : ''); if (k) h.Authorization = 'Bearer ' + k; return h; };")
+rep("catch (e) { const N = decName(); throw new Error(`could not reach ${N} at ${ollayaBase()}.", "catch (e) { const N = decName(); if (S.decideProv === 'cloud') throw new Error(`could not reach Ollama Cloud at https://ollama.com: ${e.message || e}`); throw new Error(`could not reach ${N} at ${ollayaBase()}.")
+rep('<option value="ollama">Ollama (0.35+)</option><option value="openrouter">', '<option value="ollama">Ollama (0.35+)</option><option value="cloud">Ollama Cloud (laya, jev…)</option><option value="openrouter">')
+rep("const decDraft = { ollaya: '', ollama: '', openrouter: '' };", "const decDraft = { ollaya: '', ollama: '', openrouter: '', cloud: '' };")
+rep("const decAddr = (p, v) => p === 'openrouter' ? {} : ({", "const decAddr = (p, v) => p === 'openrouter' || p === 'cloud' ? {} : ({")
+rep("$('#sOllayaHost').closest('div').hidden = p === 'openrouter'; $('#sOllayaKey').placeholder = p === 'openrouter' ? 'blank: the OpenRouter key from Model provider' : 'optional';",
+    "$('#sOllayaHost').closest('div').hidden = p === 'openrouter' || p === 'cloud'; $('#sOllayaKey').placeholder = p === 'openrouter' ? 'blank: the OpenRouter key from Model provider' : p === 'cloud' ? 'blank: the Ollama Cloud key from Model provider' : 'optional';")
+rep("(S.decideProv === 'openrouter' ? 'OpenRouter lists no models with log probabilities right now.' :", "(S.decideProv === 'openrouter' ? 'OpenRouter lists no models with log probabilities right now.' : S.decideProv === 'cloud' ? 'Ollama Cloud listed no models for this key.' :")
+
 for bad in ['showPreview', 'schedulePreview', 'prevFrame', 'btnPrevBack', 'btnFilePreview', 'btnFileSave', 'inlineAssets']:
     if bad in s: print('WARN leftover', bad, s.count(bad))
 open(os.path.join(DIST, 'jade-vault.html'), 'w').write(s)

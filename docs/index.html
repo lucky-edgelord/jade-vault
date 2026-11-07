@@ -1062,7 +1062,7 @@ body[data-jade-theme="custom-gradient"] .jade-theme-label{background:var(--theme
         <p class="text-sm leading-relaxed text-[#c2d6ce]">Ollaya, or Ollama 0.35 and newer, runs decision models locally. It doesn't write text: it answers questions you define with calibrated probabilities. When it's on, the agent gets a <span class="mono text-yl">decide</span> tool for triage, classification, scoring and yes/no checks. Ollama still does the chatting.</p>
         <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
           <label class="flex items-center gap-2 text-sm" for="sOllayaOn"><input type="checkbox" id="sOllayaOn" class="accent-emerald-400 w-4 h-4"> Give the agent the decide tool</label>
-          <div><label class="lbl" for="sDecideProv">Server</label><select id="sDecideProv" class="field mt-1"><option value="ollaya">Ollaya</option><option value="ollama">Ollama (0.35+)</option><option value="openrouter">OpenRouter (any model with log probabilities)</option></select></div>
+          <div><label class="lbl" for="sDecideProv">Server</label><select id="sDecideProv" class="field mt-1"><option value="ollaya">Ollaya</option><option value="ollama">Ollama (0.35+)</option><option value="cloud">Ollama Cloud (laya, jev…)</option><option value="openrouter">OpenRouter (any model with log probabilities)</option></select></div>
           <div><label class="lbl" for="sOllayaHost">Address</label><input id="sOllayaHost" class="field mt-1" placeholder="http://localhost:11435"></div>
           <div><label class="lbl" for="sOllayaModel">Decision model</label><div class="flex gap-2 mt-1"><select id="sOllayaModel" class="field"></select><button class="btn" id="btnOllayaScan">Scan</button></div></div>
           <div><label class="lbl" for="sOllayaKey">API key (only if the server needs one)</label><input id="sOllayaKey" type="password" class="field mt-1" placeholder="optional"></div>
@@ -3970,9 +3970,9 @@ const OLLAMA_TOOLS = TOOL_DEFS.map(t => ({ type: 'function', function: t }));
 const activeTools = () => dcFilterTools(vecFilterTools([...OLLAMA_TOOLS.filter(t => (t.function.name !== 'decide' || (S.ollayaOn && S.ollayaModel)) && (t.function.name !== 'memory' || S.memoryOn) && (t.function.name !== 'embeddings' || (S.memoryOn && S.embedOn !== false))), ...VEC_TOOL_DEFS.map(f => ({ type: 'function', function: f })), ...FLOW_TOOL_DEFS.map(f => ({ type: 'function', function: f })), ...DC_TOOL_DEFS.map(f => ({ type: 'function', function: f })), ...USB_TOOL_DEFS.filter(() => S.usbOn !== false).map(f => ({ type: 'function', function: f })), ...WORLD_TOOL_DEFS.filter(t => (S.sensesOn !== false || t.name === 'look' || t.name === 'litert' || t.name === 'onnx' || t.name === 'browser') && (t.name !== 'browser' || S.browserOn !== false) && (t.name !== 'screen' || S.screenOn !== false) && (t.name !== 'phone' || S.phoneOn !== false) && (t.name !== 'sentry' || S.sentryOn !== false) && (t.name !== 'ssh' || S.sshOn !== false) && (t.name !== 'think' || S.thinkOn !== false) && (t.name !== 'find_skill' || skillRouted()) && (t.name !== 'delegate' || S.delegateOn !== false) && (t.name !== 'chat_history' || S.memoryOn !== false) && (t.name !== 'curiosity' || S.curiosityOn) && (t.name !== 'backup' || S.abOn) && (t.name !== 'playbook' || S.playbookOn !== false)).map(f => ({ type: 'function', function: f })), ...mcpToolDefs()]));
 
 /* ---------------- decision models: Ollaya, or Ollama 0.35+ (same /v1/systemone API) ---------------- */
-const decName = () => S.decideProv === 'ollama' ? 'Ollama' : S.decideProv === 'openrouter' ? 'OpenRouter' : 'Ollaya';
-const ollayaBase = () => S.decideProv === 'openrouter' ? OR_BASE : (S.decideProv === 'ollama' ? (S.decideOllamaHost || S.host || DEFAULTS.host) : (S.ollayaHost || DEFAULTS.ollayaHost)).replace(/\/+$/, '');
-const ollayaHeaders = () => { const h = { 'Content-Type': 'application/json' }; if (S.ollayaKey) h.Authorization = 'Bearer ' + S.ollayaKey; return h; };
+const decName = () => S.decideProv === 'ollama' ? 'Ollama' : S.decideProv === 'cloud' ? 'Ollama Cloud' : S.decideProv === 'openrouter' ? 'OpenRouter' : 'Ollaya';
+const ollayaBase = () => S.decideProv === 'openrouter' ? OR_BASE : S.decideProv === 'cloud' ? 'https://ollama.com' : (S.decideProv === 'ollama' ? (S.decideOllamaHost || S.host || DEFAULTS.host) : (S.ollayaHost || DEFAULTS.ollayaHost)).replace(/\/+$/, '');
+const ollayaHeaders = () => { const h = { 'Content-Type': 'application/json' }; const k = S.ollayaKey || (S.decideProv === 'cloud' ? S.ollamaKey : ''); if (k) h.Authorization = 'Bearer ' + k; return h; };
 let ollayaModels = [], ollayaState = 'off';
 async function ollayaErr(r) {
   let msg = 'HTTP ' + r.status;
@@ -3986,7 +3986,7 @@ async function ollayaErr(r) {
 async function ollayaFetch(path, init = {}) {
   if (S.decideProv === 'openrouter') return orDecideFetch(path, init);
   try { return await fetch(ollayaBase() + path, { ...init, headers: ollayaHeaders() }); }
-  catch (e) { const N = decName(); throw new Error(`could not reach ${N} at ${ollayaBase()}. Is "${N.toLowerCase()} serve" running? If it is, the browser blocked the request: restart it with ${N.toUpperCase()}_ORIGINS="*".`); }
+  catch (e) { const N = decName(); if (S.decideProv === 'cloud') throw new Error(`could not reach Ollama Cloud at https://ollama.com: ${e.message || e}`); throw new Error(`could not reach ${N} at ${ollayaBase()}. Is "${N.toLowerCase()} serve" running? If it is, the browser blocked the request: restart it with ${N.toUpperCase()}_ORIGINS="*".`); }
 }
 async function ollayaScan() {
   const r = await ollayaFetch('/api/tags'); if (!r.ok) throw new Error(await ollayaErr(r));
@@ -5812,11 +5812,11 @@ function fillOllayaModels() {
   sel.innerHTML = list.length ? list.map(m => `<option ${m === S.ollayaModel ? 'selected' : ''}>${esc(m)}</option>`).join('') : '<option value="">press Scan</option>';
 }
 // the Address field shows the chosen decision server's address; switching servers keeps each one's draft
-const decDraft = { ollaya: '', ollama: '', openrouter: '' };
-const decAddr = (p, v) => p === 'openrouter' ? {} : ({ [p === 'ollama' ? 'decideOllamaHost' : 'ollayaHost']: v || (p === 'ollama' ? '' : DEFAULTS.ollayaHost) });
+const decDraft = { ollaya: '', ollama: '', openrouter: '', cloud: '' };
+const decAddr = (p, v) => p === 'openrouter' || p === 'cloud' ? {} : ({ [p === 'ollama' ? 'decideOllamaHost' : 'ollayaHost']: v || (p === 'ollama' ? '' : DEFAULTS.ollayaHost) });
 function decFill() {
   const p = $('#sDecideProv').value; $('#sOllayaHost').value = decDraft[p];
-  $('#sOllayaHost').closest('div').hidden = p === 'openrouter'; $('#sOllayaKey').placeholder = p === 'openrouter' ? 'blank: the OpenRouter key from Model provider' : 'optional'; $('#sOllayaHost').placeholder = p === 'ollama' ? (S.host || DEFAULTS.host) + '  (blank: the Ollama address above)' : DEFAULTS.ollayaHost;
+  $('#sOllayaHost').closest('div').hidden = p === 'openrouter' || p === 'cloud'; $('#sOllayaKey').placeholder = p === 'openrouter' ? 'blank: the OpenRouter key from Model provider' : p === 'cloud' ? 'blank: the Ollama Cloud key from Model provider' : 'optional'; $('#sOllayaHost').placeholder = p === 'ollama' ? (S.host || DEFAULTS.host) + '  (blank: the Ollama address above)' : DEFAULTS.ollayaHost;
 }
 let decPrev = null; $('#sDecideProv').onfocus = () => { decPrev = $('#sDecideProv').value; };
 $('#sDecideProv').onchange = () => { if (decPrev) decDraft[decPrev] = $('#sOllayaHost').value.trim(); decPrev = $('#sDecideProv').value; decFill(); };
@@ -5825,7 +5825,7 @@ $('#btnOllayaScan').onclick = async () => {
   const keepD = { decideProv: S.decideProv, ollayaHost: S.ollayaHost, decideOllamaHost: S.decideOllamaHost };
   const prev = S.ollayaHost, prevKey = S.ollayaKey; Object.assign(S, decTry()); S.ollayaKey = $('#sOllayaKey').value.trim();
   $('#ollayaNote').textContent = 'Scanning…';
-  try { const m = await ollayaScan(); fillOllayaModels(); $('#ollayaNote').textContent = m.length ? `Found ${m.length} model${m.length > 1 ? 's' : ''}.` : (S.decideProv === 'openrouter' ? 'OpenRouter lists no models with log probabilities right now.' : 'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b'); }
+  try { const m = await ollayaScan(); fillOllayaModels(); $('#ollayaNote').textContent = m.length ? `Found ${m.length} model${m.length > 1 ? 's' : ''}.` : (S.decideProv === 'openrouter' ? 'OpenRouter lists no models with log probabilities right now.' : S.decideProv === 'cloud' ? 'Ollama Cloud listed no models for this key.' : 'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b'); }
   catch (e) { $('#ollayaNote').textContent = e.message; }
   finally { Object.assign(S, keepD); S.ollayaHost = prev; S.ollayaKey = prevKey; }
 };
