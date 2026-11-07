@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.28.1
+
+- **Decisions on Ollama Cloud, as Ollama documents them.** Config → Decision models → Server → Ollama Cloud calls `https://ollama.com/v1/systemone` with your Ollama Cloud key. Ollama's format is now spoken properly, for local Ollama too: a choice question's options are named keys (not a list), the winning key comes back as the option's name (as Ollaya answers) with probabilities by option, and a yes/no answer (the probability of true) becomes yes/no with probabilities and a confidence. Scan lists only decision models (`clef`, `clef-flash`…), not chat models. Errors say what to do (401 bad key, 402 needs a paid plan, 404 try clef). 2.28.0's version did none of this, which is why it did not work.
+- **OpenRouter is no longer a decision server.** It stays a model provider and a fallback. A saved OpenRouter decision server moves to Ollama Cloud (with `clef`) when you have an Ollama Cloud key, otherwise back to Ollaya.
+- **Fallback list:** typing the OpenRouter key clears the row's "needs key" mark.
+- **Search in model lists.** A long model dropdown opens a searchable list: type words in any order, tap to choose, or use a name that is not listed.
+- Installs over 2.28.0 (version code 58).
+
 ## 2.27.0
 
 - **OpenRouter is a model provider.** Config → Model provider → OpenRouter: one key (`sk-or-…`) for hundreds of hosted models (Claude, GPT, Gemini, Llama, Qwen, DeepSeek…). The model list shows the models that can call tools; model ids look like `anthropic/claude-sonnet-4.5`. It works as the main provider, a fallback, the heartbeat and compaction model, and in the model router (`openrouter | anthropic/claude-sonnet-4.5 | hard coding`). OpenRouter's attribution headers are sent, and the key is kept out of exports like the other keys.

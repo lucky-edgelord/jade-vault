@@ -60,7 +60,7 @@ export async function start({ settings = {}, init = '', scale = 1 } = {}) {
       if (url.endsWith('/v1/systemone')) {
         const b = JSON.parse(req.postData()); ollaya.calls.push(b); const q = b.questions.q;
         let a;
-        if (q.type === 'choice') a = { choice: q.criteria[0], confidence: 0.91, probabilities: Object.fromEntries(q.criteria.map((c, i) => [c, i ? 0.09 / (q.criteria.length - 1) : 0.91])) };
+        if (q.type === 'choice') { const C = Array.isArray(q.criteria) ? q.criteria : Object.keys(q.criteria || {}); a = { choice: C[0], confidence: 0.91, probabilities: Object.fromEntries(C.map((c, i) => [c, i ? 0.09 / (C.length - 1) : 0.91])) }; }   // Ollaya takes a list, Ollama an object keyed by option
         else if (q.type === 'score') a = { score: 2, legend: q.criteria[1], confidence: 0.7, probabilities: [0.1, 0.7, 0.2] };
         else a = { noul: /fire|asap|urgent/i.test(b.state), confidence: 0.88, probabilities: { true: 0.88, false: 0.12 } };
         return route.fulfill({ headers: CORS, contentType: 'application/json', body: JSON.stringify({ model: 'judge-1', answers: { q: a } }) });

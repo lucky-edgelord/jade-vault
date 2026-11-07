@@ -183,6 +183,13 @@ details>summary{cursor:pointer;list-style:none} details>summary::-webkit-details
 .hljs-addition{color:var(--ok)} .hljs-deletion{color:var(--rd)}
 
 [hidden]{display:none!important}
+.ms-bg{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.72);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 12px 12px}
+.ms-box{width:100%;max-width:560px;max-height:calc(100dvh - 32px);display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--panel,#0b0f14)}
+.ms-list{overflow-y:auto;min-height:0;display:flex;flex-direction:column;border:1px solid var(--line)}
+.ms-it{text-align:left;padding:10px 12px;font-size:14px;border-bottom:1px dashed var(--line);overflow-wrap:anywhere;background:none;color:inherit}
+.ms-it:hover,.ms-it:focus{background:rgba(255,255,255,.06);outline:none}
+.ms-on{color:var(--yl);font-weight:600}
+.ms-use{color:var(--ok,#34d399)}
 [data-panel="files"]>.m-sub{overflow-x:auto;scrollbar-width:none}[data-panel="files"]>.m-sub::-webkit-scrollbar{display:none}[data-panel="files"]>.m-sub>*{flex-shrink:0}[data-panel="files"]>.m-sub>.pane-h{flex:0 0 auto;overflow:visible}@media (max-width:440px){[data-panel="files"]>.m-sub>.pane-h{display:none}}
 .m-sub .pane-h{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #schedPanel>div:first-child{flex-wrap:wrap}
@@ -1062,7 +1069,7 @@ body[data-jade-theme="custom-gradient"] .jade-theme-label{background:var(--theme
         <p class="text-sm leading-relaxed text-[#c2d6ce]">Ollaya, or Ollama 0.35 and newer, runs decision models locally. It doesn't write text: it answers questions you define with calibrated probabilities. When it's on, the agent gets a <span class="mono text-yl">decide</span> tool for triage, classification, scoring and yes/no checks. Ollama still does the chatting.</p>
         <div class="grid gap-3" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
           <label class="flex items-center gap-2 text-sm" for="sOllayaOn"><input type="checkbox" id="sOllayaOn" class="accent-emerald-400 w-4 h-4"> Give the agent the decide tool</label>
-          <div><label class="lbl" for="sDecideProv">Server</label><select id="sDecideProv" class="field mt-1"><option value="ollaya">Ollaya</option><option value="ollama">Ollama (0.35+)</option><option value="openrouter">OpenRouter (any model with log probabilities)</option></select></div>
+          <div><label class="lbl" for="sDecideProv">Server</label><select id="sDecideProv" class="field mt-1"><option value="ollaya">Ollaya</option><option value="ollama">Ollama (0.35+)</option><option value="cloud">Ollama Cloud (clef)</option></select></div>
           <div><label class="lbl" for="sOllayaHost">Address</label><input id="sOllayaHost" class="field mt-1" placeholder="http://localhost:11435"></div>
           <div><label class="lbl" for="sOllayaModel">Decision model</label><div class="flex gap-2 mt-1"><select id="sOllayaModel" class="field"></select><button class="btn" id="btnOllayaScan">Scan</button></div></div>
           <div><label class="lbl" for="sOllayaKey">API key (only if the server needs one)</label><input id="sOllayaKey" type="password" class="field mt-1" placeholder="optional"></div>
@@ -3970,9 +3977,9 @@ const OLLAMA_TOOLS = TOOL_DEFS.map(t => ({ type: 'function', function: t }));
 const activeTools = () => dcFilterTools(vecFilterTools([...OLLAMA_TOOLS.filter(t => (t.function.name !== 'decide' || (S.ollayaOn && S.ollayaModel)) && (t.function.name !== 'memory' || S.memoryOn) && (t.function.name !== 'embeddings' || (S.memoryOn && S.embedOn !== false))), ...VEC_TOOL_DEFS.map(f => ({ type: 'function', function: f })), ...FLOW_TOOL_DEFS.map(f => ({ type: 'function', function: f })), ...DC_TOOL_DEFS.map(f => ({ type: 'function', function: f })), ...USB_TOOL_DEFS.filter(() => S.usbOn !== false).map(f => ({ type: 'function', function: f })), ...WORLD_TOOL_DEFS.filter(t => (S.sensesOn !== false || t.name === 'look' || t.name === 'litert' || t.name === 'onnx' || t.name === 'browser') && (t.name !== 'browser' || S.browserOn !== false) && (t.name !== 'screen' || S.screenOn !== false) && (t.name !== 'phone' || S.phoneOn !== false) && (t.name !== 'sentry' || S.sentryOn !== false) && (t.name !== 'ssh' || S.sshOn !== false) && (t.name !== 'think' || S.thinkOn !== false) && (t.name !== 'find_skill' || skillRouted()) && (t.name !== 'delegate' || S.delegateOn !== false) && (t.name !== 'chat_history' || S.memoryOn !== false) && (t.name !== 'curiosity' || S.curiosityOn) && (t.name !== 'backup' || S.abOn) && (t.name !== 'playbook' || S.playbookOn !== false)).map(f => ({ type: 'function', function: f })), ...mcpToolDefs()]));
 
 /* ---------------- decision models: Ollaya, or Ollama 0.35+ (same /v1/systemone API) ---------------- */
-const decName = () => S.decideProv === 'ollama' ? 'Ollama' : S.decideProv === 'openrouter' ? 'OpenRouter' : 'Ollaya';
-const ollayaBase = () => S.decideProv === 'openrouter' ? OR_BASE : (S.decideProv === 'ollama' ? (S.decideOllamaHost || S.host || DEFAULTS.host) : (S.ollayaHost || DEFAULTS.ollayaHost)).replace(/\/+$/, '');
-const ollayaHeaders = () => { const h = { 'Content-Type': 'application/json' }; if (S.ollayaKey) h.Authorization = 'Bearer ' + S.ollayaKey; return h; };
+const decName = () => S.decideProv === 'ollama' ? 'Ollama' : S.decideProv === 'cloud' ? 'Ollama Cloud' : 'Ollaya';
+const ollayaBase = () => S.decideProv === 'cloud' ? OLC_BASE : (S.decideProv === 'ollama' ? (S.decideOllamaHost || S.host || DEFAULTS.host) : (S.ollayaHost || DEFAULTS.ollayaHost)).replace(/\/+$/, '');
+const ollayaHeaders = () => { const h = { 'Content-Type': 'application/json' }; const k = S.decideProv === 'cloud' ? olcKey() : S.ollayaKey; if (k) h.Authorization = 'Bearer ' + k; return h; };
 let ollayaModels = [], ollayaState = 'off';
 async function ollayaErr(r) {
   let msg = 'HTTP ' + r.status;
@@ -3984,7 +3991,7 @@ async function ollayaErr(r) {
   return msg;
 }
 async function ollayaFetch(path, init = {}) {
-  if (S.decideProv === 'openrouter') return orDecideFetch(path, init);
+  if (S.decideProv === 'ollama' || S.decideProv === 'cloud') return olDecideFetch(path, init);
   try { return await fetch(ollayaBase() + path, { ...init, headers: ollayaHeaders() }); }
   catch (e) { const N = decName(); throw new Error(`could not reach ${N} at ${ollayaBase()}. Is "${N.toLowerCase()} serve" running? If it is, the browser blocked the request: restart it with ${N.toUpperCase()}_ORIGINS="*".`); }
 }
@@ -5812,20 +5819,20 @@ function fillOllayaModels() {
   sel.innerHTML = list.length ? list.map(m => `<option ${m === S.ollayaModel ? 'selected' : ''}>${esc(m)}</option>`).join('') : '<option value="">press Scan</option>';
 }
 // the Address field shows the chosen decision server's address; switching servers keeps each one's draft
-const decDraft = { ollaya: '', ollama: '', openrouter: '' };
-const decAddr = (p, v) => p === 'openrouter' ? {} : ({ [p === 'ollama' ? 'decideOllamaHost' : 'ollayaHost']: v || (p === 'ollama' ? '' : DEFAULTS.ollayaHost) });
+const decDraft = { ollaya: '', ollama: '', cloud: '' };
+const decAddr = (p, v) => p === 'cloud' ? {} : ({ [p === 'ollama' ? 'decideOllamaHost' : 'ollayaHost']: v || (p === 'ollama' ? '' : DEFAULTS.ollayaHost) });
 function decFill() {
   const p = $('#sDecideProv').value; $('#sOllayaHost').value = decDraft[p];
-  $('#sOllayaHost').closest('div').hidden = p === 'openrouter'; $('#sOllayaKey').placeholder = p === 'openrouter' ? 'blank: the OpenRouter key from Model provider' : 'optional'; $('#sOllayaHost').placeholder = p === 'ollama' ? (S.host || DEFAULTS.host) + '  (blank: the Ollama address above)' : DEFAULTS.ollayaHost;
+  $('#sOllayaHost').closest('div').hidden = p === 'cloud'; $('#sOllayaKey').placeholder = p === 'cloud' ? 'blank: the Ollama Cloud key from Model provider' : 'optional'; $('#sOllayaHost').placeholder = p === 'ollama' ? (S.host || DEFAULTS.host) + '  (blank: the Ollama address above)' : DEFAULTS.ollayaHost;
 }
 let decPrev = null; $('#sDecideProv').onfocus = () => { decPrev = $('#sDecideProv').value; };
-$('#sDecideProv').onchange = () => { if (decPrev) decDraft[decPrev] = $('#sOllayaHost').value.trim(); decPrev = $('#sDecideProv').value; decFill(); };
+$('#sDecideProv').onchange = () => { if (decPrev) decDraft[decPrev] = $('#sOllayaHost').value.trim(); decPrev = $('#sDecideProv').value; if (decPrev === 'cloud' && !$('#sOllayaModel').value) { $('#sOllayaModel').innerHTML = '<option>clef</option>'; } decFill(); };
 const decTry = () => ({ decideProv: $('#sDecideProv').value, ...decAddr($('#sDecideProv').value, $('#sOllayaHost').value.trim()) });
 $('#btnOllayaScan').onclick = async () => {
   const keepD = { decideProv: S.decideProv, ollayaHost: S.ollayaHost, decideOllamaHost: S.decideOllamaHost };
   const prev = S.ollayaHost, prevKey = S.ollayaKey; Object.assign(S, decTry()); S.ollayaKey = $('#sOllayaKey').value.trim();
   $('#ollayaNote').textContent = 'Scanning…';
-  try { const m = await ollayaScan(); fillOllayaModels(); $('#ollayaNote').textContent = m.length ? `Found ${m.length} model${m.length > 1 ? 's' : ''}.` : (S.decideProv === 'openrouter' ? 'OpenRouter lists no models with log probabilities right now.' : 'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b'); }
+  try { const m = await ollayaScan(); fillOllayaModels(); $('#ollayaNote').textContent = m.length ? `Found ${m.length} model${m.length > 1 ? 's' : ''}.` : (S.decideProv === 'cloud' ? 'Ollama Cloud listed no decision models for this key.' : S.decideProv === 'ollama' ? 'Connected, but no decision models are pulled yet. Run: ollama pull clef-flash' : 'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b'); }
   catch (e) { $('#ollayaNote').textContent = e.message; }
   finally { Object.assign(S, keepD); S.ollayaHost = prev; S.ollayaKey = prevKey; }
 };
@@ -6495,7 +6502,7 @@ $('#fbList').addEventListener('click', e => {
   const vis = fbDraft.order.filter(q => q !== prim); const i = vis.indexOf(p), j = i + +b.dataset.mv; if (j < 0 || j >= vis.length) return;
   [vis[i], vis[j]] = [vis[j], vis[i]]; fbDraft.order = [prim, ...vis].filter((q, k, a) => a.indexOf(q) === k); renderFbList();
 });
-for (const id of ['#sCloudKey', '#sGroqKey', '#sOaiHost', '#sLcppHost', '#sAicKey']) $(id).addEventListener('input', () => renderFbList());
+for (const id of ['#sCloudKey', '#sGroqKey', '#sOaiHost', '#sLcppHost', '#sAicKey', '#sOrKey']) $(id)?.addEventListener('input', () => renderFbList());
 
 /* ---------- compaction / journal model ---------- */
 async function fillAuxModels(scan) {
@@ -16721,14 +16728,11 @@ setTimeout(() => { autoWire(); autoSeedSkill(); autoStart(); }, 1900);
 Object.assign(window, { AUTO, autoStart, autoAdd, autoPick, autoRun, autoTick, autoUsed, autoBlocked, autoQuiet, autoSet, autoStopNow, autoLoad, autoSave, autoFromGantt, autoStatus, autoEffPrio, schedTool, schedInterrupt, openQueue, autoRender, autoSeedSkill, AUTO_SKILL });
 
 /* =====================================================================
-   OPENROUTER: a model provider (hundreds of models behind one key) and a decision server
+   OPENROUTER: a model provider (hundreds of models behind one key); since 2.28.1 not a decision server
    ===================================================================== */
-// As a provider it is the OpenAI-compatible client (providers.js) with OpenRouter's address, its attribution headers and
-// a model list cut to models that can call tools. As a decision server it answers the same /v1/systemone requests as
-// Ollaya and Ollama, so the decide tool, scripts' jade.decide and the model router work unchanged: the options are
-// lettered A, B, C…, the model answers with one letter, and the probabilities are read from that token's log
-// probabilities (only models that report them are offered). A model that returns none falls back to asking for
-// probabilities as JSON.
+// The OpenAI-compatible client (providers.js) with OpenRouter's address, its attribution headers and a model list cut
+// to models that can call tools. It works as the main provider, a fallback, the heartbeat and compaction model and in
+// the model router's list of models.
 const OR_BASE = 'https://openrouter.ai/api/v1';
 const OR_HEADERS = { 'HTTP-Referer': 'https://lucky-edgelord.github.io/jade-vault/', 'X-Title': 'Jade Vault' };
 let orModelCache = null, orModelAt = 0;
@@ -16739,88 +16743,161 @@ async function orModelList() {
   const j = await r.json(); orModelCache = j.data || []; orModelAt = Date.now();
   return orModelCache;
 }
-// for the chat: models that can call tools; for decisions: models that report log probabilities
 async function orModels(kind = 'tools') {
   const all = await orModelList();
   const want = kind === 'logprobs' ? ['logprobs', 'top_logprobs'] : ['tools'];
   return all.filter(m => !Array.isArray(m.supported_parameters) || want.every(p => m.supported_parameters.includes(p))).map(m => m.id).filter(Boolean).sort();
 }
-const orKeyFor = () => (S.decideProv === 'openrouter' && S.ollayaKey) || S.orKey || '';
-async function orPost(path, body, key) {
-  let r;
-  try { r = await fetch(OR_BASE + path, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key, ...OR_HEADERS }, body: JSON.stringify(body) }); }
-  catch (e) { throw new Error('could not reach OpenRouter: ' + (e.message || e)); }
-  const text = await r.text(); let j = {}; try { j = JSON.parse(text); } catch {}
-  if (!r.ok || j.error) {
-    const m = j.error?.message || j.error || text.slice(0, 300) || 'HTTP ' + r.status;
-    const e = new Error(r.status === 401 ? 'OpenRouter rejected the API key (401)' : r.status === 402 ? 'OpenRouter: no credits left (402)' : `OpenRouter: ${m}`); e.status = r.status || 502; throw e;
-  }
-  return j;
-}
-const OR_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-// one /v1/systemone question, answered by an OpenRouter model: { model, answers: { q: { choice | score | noul, probabilities, confidence } } }
-async function orSystemone(body) {
-  const key = orKeyFor(); if (!key) { const e = new Error('no OpenRouter API key set (Config → Model provider → OpenRouter, or the key field under Decision models)'); e.status = 401; throw e; }
-  const model = body.model; const out = {};
-  for (const [name, q] of Object.entries(body.questions || {})) {
-    const t = q.type || 'choice';
-    const opts = t === 'noul' ? ['no', 'yes'] : (q.criteria || []).map(String);
-    if (opts.length < 2) throw Object.assign(new Error(`question ${name}: needs at least 2 options`), { status: 400 });
-    if (opts.length > OR_LETTERS.length) throw Object.assign(new Error(`question ${name}: OpenRouter decisions take at most ${OR_LETTERS.length} options`), { status: 400 });
-    const L = opts.map((_, i) => OR_LETTERS[i]);
-    const ask = t === 'noul' ? `${q.instructions}\n\nA. no\nB. yes` : t === 'score' ? `${q.instructions}\n\nLevels, lowest first:\n${opts.map((o, i) => `${L[i]}. ${o}`).join('\n')}` : `${q.instructions}\n\nOptions:\n${opts.map((o, i) => `${L[i]}. ${o}`).join('\n')}`;
-    const messages = [
-      { role: 'system', content: 'You are a careful, calibrated classifier. Read the text, then answer the question with the letter of the best option and nothing else.' },
-      { role: 'user', content: `Text:\n${String(body.state ?? '').slice(0, 24000)}\n\nQuestion: ${ask}\n\nAnswer with one letter (${L[0]}-${L[L.length - 1]}).` },
-    ];
-    const j = await orPost('/chat/completions', { model, messages, temperature: 0, max_tokens: 1, logprobs: true, top_logprobs: 20 }, key);
-    const ch = j.choices?.[0] || {};
-    let probs = orProbsFromLogprobs(ch.logprobs, L);
-    if (!probs) probs = await orProbsFromJson(model, messages, L, key, String(ch.message?.content || ''));
-    let best = 0; probs.forEach((p, i) => { if (p > probs[best]) best = i; });
-    const a = { type: t, probabilities: Object.fromEntries(opts.map((o, i) => [t === 'noul' ? o : String(i), +probs[i].toFixed(6)])), confidence: +probs[best].toFixed(6) };
-    if (t === 'choice') a.choice = best;
-    else if (t === 'score') { a.score = best; a.legend = opts[best]; }
-    else a.noul = best === 1;
-    out[name] = a;
-  }
-  return { model, answers: out, via: 'openrouter' };
-}
-function orProbsFromLogprobs(lp, L) {
-  const first = lp?.content?.[0]; if (!first) return null;
-  const cands = [...(first.top_logprobs || []), { token: first.token, logprob: first.logprob }];
-  const p = L.map(() => 0); let seen = false; const used = new Set();
-  for (const c of cands) {
-    const tok = String(c.token || '').trim().replace(/[.):\s]+$/, '').toUpperCase(); const i = L.indexOf(tok);
-    if (i < 0 || used.has(tok + '|' + c.logprob) || typeof c.logprob !== 'number') continue;
-    used.add(tok + '|' + c.logprob); p[i] += Math.exp(c.logprob); seen = true;
-  }
-  if (!seen) return null;
-  const s = p.reduce((a, b) => a + b, 0); return p.map(x => x / s);
-}
-async function orProbsFromJson(model, messages, L, key, said) {
-  try {
-    const j = await orPost('/chat/completions', { model, temperature: 0, max_tokens: 400, response_format: { type: 'json_object' }, messages: [...messages.slice(0, 1), { role: 'user', content: messages[1].content.replace(/\n\nAnswer with one letter[\s\S]*$/, '') + `\n\nReply with JSON only: {"probabilities": {${L.map(l => `"${l}": number`).join(', ')}}}, your probability for each option, summing to 1.` }] }, key);
-    const txt = String(j.choices?.[0]?.message?.content || '').replace(/^```(json)?|```$/g, '');
-    const o = JSON.parse(txt.slice(txt.indexOf('{'), txt.lastIndexOf('}') + 1)).probabilities || {};
-    const p = L.map(l => Math.max(0, +o[l] || 0)); const s = p.reduce((a, b) => a + b, 0);
-    if (s > 0) return p.map(x => x / s);
-  } catch {}
-  const i = L.indexOf(said.trim().charAt(0).toUpperCase());   // only the letter: all of the weight on it
-  return L.map((_, k) => (i < 0 ? 1 / L.length : k === i ? 1 : 0));
-}
-// what ollayaFetch returns when the decision server is OpenRouter: a Response, as if from Ollaya
-async function orDecideFetch(path, init = {}) {
-  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json' } });
-  try {
-    if (path === '/api/tags') return json({ models: (await orModels('logprobs')).map(name => ({ name })) });
-    if (path === '/v1/systemone') return json(await orSystemone(JSON.parse(init.body || '{}')));
-    return json({ error: `OpenRouter has no ${path}` }, 404);
-  } catch (e) { return json({ error: String(e.message || e) }, e.status || 502); }
-}
-Object.assign(window, { OR_BASE, OR_HEADERS, orModels, orModelList, orSystemone, orDecideFetch, orProbsFromLogprobs });
+Object.assign(window, { OR_BASE, OR_HEADERS, orModels, orModelList });
 // for tests and scripts (these live in the app's main script scope)
 setTimeout(() => { for (const [n, f] of [['makeClientFor', () => makeClientFor], ['providerMissing', () => providerMissing], ['tryProvider', () => tryProvider], ['ollayaScan', () => ollayaScan], ['decName', () => decName], ['SECRET_KEYS', () => SECRET_KEYS]]) { try { window[n] = f(); } catch {} } }, 0);
+
+/* =====================================================================
+   DECISIONS ON OLLAMA AND OLLAMA CLOUD (2.28.1)
+   Ollama's /v1/systemone (docs.ollama.com/api/systemone) differs from Ollaya's in three ways, so requests and
+   answers are translated here and the rest of the app (decide, jade.decide, flow Decide steps, the model router)
+   keeps seeing the Ollaya shape:
+   - a choice question's criteria is an object { key: description }, not a list;
+   - a choice answer names the winning key, and its probabilities are keyed by option key;
+   - a noul (yes/no) answer is the probability of true (a number), not a boolean.
+   Ollama Cloud is POST https://ollama.com/v1/systemone with the API key as a Bearer token; there the model is
+   named without the ":cloud" suffix (clef), and the decision models are listed from https://ollama.com/api/tags.
+   ===================================================================== */
+const OLC_BASE = 'https://ollama.com';
+const OLC_DECIDERS = /^(clef|clef-flash|laya|jev|nimble|tev1|kev|winnow|largha|decider)(?=$|[:\-])/i;
+const olcKey = () => S.ollayaKey || S.ollamaKey || '';
+const olKeyOf = (opts, i) => {   // option keys: the option itself when short and unique, else option_N
+  const o = String(opts[i]).trim(); const k = o.length && o.length <= 100 ? o : `option_${i + 1}`;
+  return opts.findIndex(x => String(x).trim() === o) === i ? k : `option_${i + 1}`;
+};
+// Ollaya-shaped request → Ollama request (and the key ↔ index maps for the answers)
+function olReq(body, cloud) {
+  const maps = {}, questions = {};
+  for (const [name, q] of Object.entries(body.questions || {})) {
+    const nq = { ...q };
+    if ((q.type || 'choice') === 'choice' && Array.isArray(q.criteria)) {
+      const keys = q.criteria.map((_, i) => olKeyOf(q.criteria, i));
+      nq.criteria = Object.fromEntries(keys.map((k, i) => [k, String(q.criteria[i])]));
+      maps[name] = { keys, opts: q.criteria.map(String) };
+    }
+    questions[name] = nq;
+  }
+  let model = String(body.model || '');
+  if (cloud) model = model.replace(/[:\-]cloud$/i, '');
+  return { req: { ...body, model, questions }, maps };
+}
+// Ollama answer → Ollaya-shaped answer
+function olAns(a, m) {
+  if (!a || typeof a !== 'object') return a;
+  const out = { ...a };
+  if ('choice' in a && m) {   // as Ollaya answers: the chosen option's text, probabilities keyed by option
+    const i = typeof a.choice === 'number' ? a.choice : m.keys.indexOf(String(a.choice));
+    if (i >= 0 && i < m.opts.length) out.choice = m.opts[i];
+    if (a.probabilities && !Array.isArray(a.probabilities)) out.probabilities = Object.fromEntries(m.keys.map((k, j) => [m.opts[j], +(a.probabilities[k] ?? 0)]));
+  }
+  if (typeof a.noul === 'number') {
+    const p = Math.max(0, Math.min(1, a.noul));
+    out.noul = p >= 0.5; out.p_true = p;
+    out.probabilities = { no: +(1 - p).toFixed(6), yes: +p.toFixed(6) };
+    if (out.confidence == null) out.confidence = +Math.max(p, 1 - p).toFixed(6);
+  }
+  return out;
+}
+const olJson = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json' } });
+async function olDecideFetch(path, init = {}) {
+  const cloud = S.decideProv === 'cloud';
+  const base = ollayaBase(), headers = ollayaHeaders();
+  if (cloud && !headers.Authorization) return olJson({ error: 'no Ollama Cloud API key (Config → Model provider → Ollama Cloud, or the key field under Decision models)' }, 401);
+  let r;
+  if (path === '/api/tags') {
+    try { r = await fetch(base + '/api/tags', { headers }); }
+    catch (e) { throw new Error(cloud ? `could not reach Ollama Cloud at ${OLC_BASE}: ${e.message || e}` : `could not reach Ollama at ${base}. Is "ollama serve" running? If it is, the browser blocked the request: restart it with OLLAMA_ORIGINS="*".`); }
+    if (!r.ok) return r;
+    const j = await r.json(); const all = (j.models || []).map(m => ({ name: m.name || m.model, caps: m.capabilities || m.details?.capabilities })).filter(m => m.name);
+    const dec = all.filter(m => (Array.isArray(m.caps) && m.caps.includes('decision')) || OLC_DECIDERS.test(m.name));
+    const names = dec.map(m => cloud ? m.name.replace(/[:\-]cloud$/i, '') : m.name);
+    if (cloud && !names.includes('clef')) names.unshift('clef');   // the documented cloud decision model
+    return olJson({ models: [...new Set(names)].map(name => ({ name })) });
+  }
+  if (path === '/v1/systemone') {
+    const { req, maps } = olReq(JSON.parse(init.body || '{}'), cloud);
+    try { r = await fetch(base + '/v1/systemone', { method: 'POST', headers, body: JSON.stringify(req) }); }
+    catch (e) { throw new Error(cloud ? `could not reach Ollama Cloud at ${OLC_BASE}: ${e.message || e}` : `could not reach Ollama at ${base}. Is "ollama serve" running? If it is, the browser blocked the request: restart it with OLLAMA_ORIGINS="*".`); }
+    if (!r.ok) {
+      if (!cloud) return r;
+      let m = 'HTTP ' + r.status; try { m = (await r.json()).error || m; } catch {}
+      const hint = r.status === 401 ? ' (the Ollama Cloud API key was rejected)' : r.status === 402 ? ' (cloud decision models need a paid Ollama plan or usage credits)' : r.status === 404 ? ` (Ollama Cloud has no decision model "${req.model}"; try clef)` : '';
+      return olJson({ error: m + hint }, r.status);
+    }
+    const j = await r.json();
+    const answers = Object.fromEntries(Object.entries(j.answers || {}).map(([k, a]) => [k, olAns(a, maps[k])]));
+    return olJson({ ...j, answers });
+  }
+  try { return await fetch(base + path, { ...init, headers }); }
+  catch (e) { throw new Error(`could not reach ${decName()} at ${base}`); }
+}
+// a saved OpenRouter decision server (2.27) moves to Ollama Cloud when there is a key, else back to Ollaya
+if (S.decideProv === 'openrouter') {
+  S.decideProv = S.ollamaKey ? 'cloud' : 'ollaya';
+  if (/\//.test(S.ollayaModel || '')) S.ollayaModel = S.decideProv === 'cloud' ? 'clef' : '';
+  if (/\//.test(S.routerDecider || '')) S.routerDecider = '';
+  try { saveSettings(); } catch {}
+}
+Object.assign(window, { olReq, olAns, olDecideFetch, OLC_BASE });
+
+/* =====================================================================
+   MODEL SEARCH (2.28.1): a model dropdown with many entries opens a searchable list instead of the native one.
+   Type part of a name (words in any order) to narrow it; tap one to choose it. "Use …" picks a name that is
+   not in the list (a model you know exists). The select stays the source of truth: choosing sets its value and
+   fires its change event, so every screen keeps working as before. Keyboard users still get the native list.
+   ===================================================================== */
+const MS_IDS = ['modelSel', 'sModel', 'sHbModel', 'sAuxModel', 'sOllayaModel', 'sVisModel'];
+const MS_MIN = 9;   // fewer options than this: the native list is fine
+const msMatch = (name, q) => { const n = name.toLowerCase(); return q.toLowerCase().split(/\s+/).filter(Boolean).every(w => n.includes(w)); };
+function msOpen(sel) {
+  const opts = [...sel.options].map(o => ({ v: o.value, t: o.textContent.trim() || o.value })).filter(o => o.v !== '' || o.t);
+  const bg = document.createElement('div'); bg.className = 'ms-bg'; bg.setAttribute('role', 'dialog'); bg.setAttribute('aria-label', 'Search models');
+  bg.innerHTML = `<div class="ms-box frame cut"><div class="flex gap-2 items-center"><input type="search" class="field ms-q" placeholder="Search ${opts.length} models…" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go"><button type="button" class="btn btn-ghost ms-x" aria-label="Close">✕</button></div><div class="ms-list" role="listbox"></div><div class="hint ms-n"></div></div>`;
+  const q = bg.querySelector('.ms-q'), list = bg.querySelector('.ms-list'), note = bg.querySelector('.ms-n');
+  let shown = [];
+  const draw = () => {
+    const s = q.value.trim(); shown = s ? opts.filter(o => msMatch(o.t + ' ' + o.v, s)) : opts;
+    const extra = s && !opts.some(o => o.v === s) ? `<button type="button" class="ms-it ms-use" data-v="${esc(s)}">Use “${esc(s)}”</button>` : '';
+    list.innerHTML = shown.slice(0, 300).map(o => `<button type="button" role="option" class="ms-it${o.v === sel.value ? ' ms-on' : ''}" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + extra;
+    note.textContent = shown.length > 300 ? `${shown.length} match; showing the first 300. Type more to narrow it.` : s ? `${shown.length} of ${opts.length}` : '';
+  };
+  const close = () => { bg.remove(); document.removeEventListener('keydown', onKey, true); try { sel.focus({ preventScroll: true }); } catch {} };
+  const choose = v => {
+    if (![...sel.options].some(o => o.value === v)) { const o = document.createElement('option'); o.value = o.textContent = v; sel.appendChild(o); }
+    sel.value = v; sel.dispatchEvent(new Event('input', { bubbles: true })); sel.dispatchEvent(new Event('change', { bubbles: true })); close();
+  };
+  const onKey = e => { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); close(); } };
+  q.addEventListener('input', draw);
+  q.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const s = q.value.trim(); if (shown.length === 1) choose(shown[0].v); else if (s && opts.some(o => o.v === s)) choose(s); else if (shown[0]) choose(shown[0].v); else if (s) choose(s); } });
+  list.addEventListener('click', e => { const b = e.target.closest('.ms-it'); if (b) choose(b.dataset.v); });
+  bg.querySelector('.ms-x').onclick = close;
+  bg.addEventListener('click', e => { if (e.target === bg) close(); });
+  document.addEventListener('keydown', onKey, true);
+  document.body.appendChild(bg); draw();
+  list.querySelector('.ms-on')?.scrollIntoView({ block: 'center' });
+  setTimeout(() => q.focus(), 30);
+}
+function msWire(sel) {
+  if (!sel || sel.tagName !== 'SELECT' || sel.dataset.ms) return; sel.dataset.ms = '1';
+  const big = () => !sel.disabled && sel.options.length >= MS_MIN;
+  const grab = e => { if (!big()) return; e.preventDefault(); e.stopPropagation(); msOpen(sel); };
+  sel.addEventListener('mousedown', grab);
+  // a tap (not a scroll that started on the select) opens the search; cancelling touchend stops the native list
+  let t0 = null;
+  sel.addEventListener('touchstart', e => { const t = e.touches[0]; t0 = t ? { x: t.clientX, y: t.clientY } : null; }, { passive: true });
+  sel.addEventListener('touchend', e => { const t = e.changedTouches[0]; const tap = t0 && t && Math.hypot(t.clientX - t0.x, t.clientY - t0.y) < 10; t0 = null; if (tap) grab(e); }, { passive: false });
+  sel.addEventListener('keydown', e => { if (big() && (e.key === '/' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f'))) { e.preventDefault(); msOpen(sel); } });
+  const tip = () => { sel.title = big() ? `Tap to search ${sel.options.length} models` : ''; };
+  new MutationObserver(tip).observe(sel, { childList: true }); tip();
+}
+function msWireAll() { for (const id of MS_IDS) msWire(document.getElementById(id)); }
+msWireAll(); setTimeout(msWireAll, 0);
+Object.assign(window, { msOpen, msWire, msMatch });
 
 /* =====================================================================
    BOOT

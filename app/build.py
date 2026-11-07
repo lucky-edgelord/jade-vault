@@ -2096,17 +2096,30 @@ rep("$('#sAicKey').value = S.aicKey || '';", "$('#sAicKey').value = S.aicKey || 
 rep("aicKey: $('#sAicKey')?.value.trim() || '',", "aicKey: $('#sAicKey')?.value.trim() || '', orKey: $('#sOrKey')?.value.trim() || '',")
 rep("'vecToken', 'aicKey', 'dcToken',", "'vecToken', 'aicKey', 'orKey', 'dcToken',")
 rep("openai (the OpenAI-compatible endpoint), aicord", "openrouter (model ids like openai/gpt-4o-mini), openai (the OpenAI-compatible endpoint), aicord")
-# decisions through OpenRouter: the same /v1/systemone answers, from a model's log probabilities
-rep("const decName = () => S.decideProv === 'ollama' ? 'Ollama' : 'Ollaya';", "const decName = () => S.decideProv === 'ollama' ? 'Ollama' : S.decideProv === 'openrouter' ? 'OpenRouter' : 'Ollaya';")
-rep("const ollayaBase = () => (S.decideProv === 'ollama' ?", "const ollayaBase = () => S.decideProv === 'openrouter' ? OR_BASE : (S.decideProv === 'ollama' ?")
-rep("async function ollayaFetch(path, init = {}) {", "async function ollayaFetch(path, init = {}) {\n  if (S.decideProv === 'openrouter') return orDecideFetch(path, init);")
-rep('<option value="ollama">Ollama (0.35+)</option></select>', '<option value="ollama">Ollama (0.35+)</option><option value="openrouter">OpenRouter (any model with log probabilities)</option></select>')
-rep("const decDraft = { ollaya: '', ollama: '' };", "const decDraft = { ollaya: '', ollama: '', openrouter: '' };")
-rep("const decAddr = (p, v) => ({", "const decAddr = (p, v) => p === 'openrouter' ? {} : ({")
+# ================= v2.28.1: decisions on Ollama and Ollama Cloud (docs.ollama.com/api/systemone); none on OpenRouter =================
+s = s.replace('/* =====================================================================\n   BOOT', rd('ollama_decide.js') + '\n/* =====================================================================\n   BOOT', 1)
+rep("const decName = () => S.decideProv === 'ollama' ? 'Ollama' : 'Ollaya';", "const decName = () => S.decideProv === 'ollama' ? 'Ollama' : S.decideProv === 'cloud' ? 'Ollama Cloud' : 'Ollaya';")
+rep("const ollayaBase = () => (S.decideProv === 'ollama' ?", "const ollayaBase = () => S.decideProv === 'cloud' ? OLC_BASE : (S.decideProv === 'ollama' ?")
+rep("const ollayaHeaders = () => { const h = { 'Content-Type': 'application/json' }; if (S.ollayaKey) h.Authorization = 'Bearer ' + S.ollayaKey; return h; };",
+    "const ollayaHeaders = () => { const h = { 'Content-Type': 'application/json' }; const k = S.decideProv === 'cloud' ? olcKey() : S.ollayaKey; if (k) h.Authorization = 'Bearer ' + k; return h; };")
+rep("async function ollayaFetch(path, init = {}) {", "async function ollayaFetch(path, init = {}) {\n  if (S.decideProv === 'ollama' || S.decideProv === 'cloud') return olDecideFetch(path, init);")
+rep('<option value="ollama">Ollama (0.35+)</option></select>', '<option value="ollama">Ollama (0.35+)</option><option value="cloud">Ollama Cloud (clef)</option></select>')
+rep("const decDraft = { ollaya: '', ollama: '' };", "const decDraft = { ollaya: '', ollama: '', cloud: '' };")
+rep("const decAddr = (p, v) => ({", "const decAddr = (p, v) => p === 'cloud' ? {} : ({")
 rep("$('#sDecideProv').onchange = () => { const other = $('#sDecideProv').value === 'ollama' ? 'ollaya' : 'ollama'; decDraft[other] = $('#sOllayaHost').value.trim(); decFill(); };",
-    "let decPrev = null; $('#sDecideProv').onfocus = () => { decPrev = $('#sDecideProv').value; };\n$('#sDecideProv').onchange = () => { if (decPrev) decDraft[decPrev] = $('#sOllayaHost').value.trim(); decPrev = $('#sDecideProv').value; decFill(); };")
-rep("$('#sOllayaHost').placeholder = p === 'ollama' ?", "$('#sOllayaHost').closest('div').hidden = p === 'openrouter'; $('#sOllayaKey').placeholder = p === 'openrouter' ? 'blank: the OpenRouter key from Model provider' : 'optional'; $('#sOllayaHost').placeholder = p === 'ollama' ?")
-rep("'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b'", "(S.decideProv === 'openrouter' ? 'OpenRouter lists no models with log probabilities right now.' : 'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b')")
+    "let decPrev = null; $('#sDecideProv').onfocus = () => { decPrev = $('#sDecideProv').value; };\n$('#sDecideProv').onchange = () => { if (decPrev) decDraft[decPrev] = $('#sOllayaHost').value.trim(); decPrev = $('#sDecideProv').value; if (decPrev === 'cloud' && !$('#sOllayaModel').value) { $('#sOllayaModel').innerHTML = '<option>clef</option>'; } decFill(); };")
+rep("$('#sOllayaHost').placeholder = p === 'ollama' ?", "$('#sOllayaHost').closest('div').hidden = p === 'cloud'; $('#sOllayaKey').placeholder = p === 'cloud' ? 'blank: the Ollama Cloud key from Model provider' : 'optional'; $('#sOllayaHost').placeholder = p === 'ollama' ?")
+rep("'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b'", "(S.decideProv === 'cloud' ? 'Ollama Cloud listed no decision models for this key.' : S.decideProv === 'ollama' ? 'Connected, but no decision models are pulled yet. Run: ollama pull clef-flash' : 'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b')")
+
+# ================= v2.28.1: search in the model dropdowns =================
+s = s.replace('/* =====================================================================\n   BOOT', rd('model_search.js') + '\n/* =====================================================================\n   BOOT', 1)
+rep('[hidden]{display:none!important}', '[hidden]{display:none!important}\n' + """.ms-bg{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.72);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 12px 12px}
+.ms-box{width:100%;max-width:560px;max-height:calc(100dvh - 32px);display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--panel,#0b0f14)}
+.ms-list{overflow-y:auto;min-height:0;display:flex;flex-direction:column;border:1px solid var(--line)}
+.ms-it{text-align:left;padding:10px 12px;font-size:14px;border-bottom:1px dashed var(--line);overflow-wrap:anywhere;background:none;color:inherit}
+.ms-it:hover,.ms-it:focus{background:rgba(255,255,255,.06);outline:none}
+.ms-on{color:var(--yl);font-weight:600}
+.ms-use{color:var(--ok,#34d399)}""")
 
 for bad in ['showPreview', 'schedulePreview', 'prevFrame', 'btnPrevBack', 'btnFilePreview', 'btnFileSave', 'inlineAssets']:
     if bad in s: print('WARN leftover', bad, s.count(bad))
