@@ -37,9 +37,19 @@ The configured primary provider is tried first, then the fallback providers in o
 - Tool calling, image input, output quality, and context size depend on the selected model/provider.
 - Context guard can compact or trim history and learn limits; it does not make a small model's context unlimited.
 
-## Decisions through OpenRouter
+## Decisions on Ollama Cloud
 
-Choose **OpenRouter** under Config → Decision models → Server to answer `decide`, `jade.decide()`, flow Decide steps and the model router with an OpenRouter model. **Scan** lists the models that report log probabilities (for example `openai/gpt-4o-mini`). The options are lettered A, B, C…, the model answers with one letter, and the probabilities come from that token's log probabilities, normalised over the options; a model that returns none is asked for its probabilities as JSON instead. Up to 26 options. The key field may stay blank to use the OpenRouter key from Model provider. Every decision is a paid request to OpenRouter.
+Choose **Ollama Cloud** under Config → Decision models → Server to run decisions on ollama.com (`POST https://ollama.com/v1/systemone`, per [Ollama's System One docs](https://docs.ollama.com/api/systemone)). It uses the Ollama Cloud key from Model provider; a key typed in the Decision models key field wins. **Scan** lists the decision models your key can use (today Ollama documents `clef`; a name typed with `:cloud`, the local-server form, is sent as `clef`). Cloud decision models need a paid Ollama plan or usage credits. `decide`, `jade.decide()`, flow Decide steps and the model router all go there.
+
+Ollama's decision API differs from Ollaya's in its wire format: a choice question's options are named keys, the answer names the winning key, and a yes/no answer is the probability of true. Jade translates both ways, for local Ollama (0.35+) too, so answers look the same whichever server you use.
+
+## Fallback providers
+
+Under Config → Model provider → **If it fails, try these in order**, tick any provider (OpenRouter included) and order them with the arrows. A ticked provider without its key says **needs key** and shows its key field; the mark clears once the key is typed.
+
+## Searching model lists
+
+Model dropdowns with more than eight entries (the header, Model provider, heartbeat, compaction and decision models) open a searchable list: type words in any order to narrow it, tap one to choose it, or **Use** a name that is not listed. Enter picks the only match; Escape closes it.
 
 ## Jade's gemstone themes
 
@@ -49,7 +59,7 @@ Under **Customize Jade's appearance**, hair, clothes, stockings, and boots can e
 
 ## Other model settings
 
-Choose context and generation settings conservatively for your model and hardware. Decision models (Ollaya, Ollama 0.35+ on the same `/v1/systemone` API, or OpenRouter; Config → Decision models → Server) are a separate classification/decision capability used by `jade.decide()` and flow Decide steps; configure that service before relying on them. Heartbeat can use its own provider/model settings. A separate compaction model can also be selected; choose one suitable for summarizing the same private context as the chat model.
+Choose context and generation settings conservatively for your model and hardware. Decision models (Ollaya, Ollama 0.35+, or Ollama Cloud; Config → Decision models → Server) are a separate classification/decision capability used by `jade.decide()` and flow Decide steps; configure that service before relying on them. Heartbeat can use its own provider/model settings. A separate compaction model can also be selected; choose one suitable for summarizing the same private context as the chat model.
 
 ## Credentials and secrets
 
