@@ -11,6 +11,7 @@ Use Config's search box if a section is not visible in the selected tab. Keep cr
 | Ollama | Host of an Ollama server, commonly `http://localhost:11434` on the same computer | Client uses `/api/tags` and `/api/chat` |
 | Ollama Cloud | Cloud configuration plus API key | Sends model requests off-device |
 | Groq | Groq API key | OpenAI-style chat API; model/tool capabilities vary |
+| OpenRouter | OpenRouter API key (`sk-or-…`) | Hundreds of hosted models behind one key, billed per token; the model list shows only models that can call tools; model ids look like `anthropic/claude-sonnet-4.5` |
 | llama.cpp | Running server, commonly port 8080 | Client normalizes its base to `/v1` |
 | OpenAI-compatible | API base URL and optional bearer key | Base should include the provider's API prefix, commonly `/v1`; client appends `/models` and `/chat/completions` |
 | AICord | AICord key and character selection | Non-streaming character replies; no tool calling; model list represents characters |
@@ -36,6 +37,10 @@ The configured primary provider is tried first, then the fallback providers in o
 - Tool calling, image input, output quality, and context size depend on the selected model/provider.
 - Context guard can compact or trim history and learn limits; it does not make a small model's context unlimited.
 
+## Decisions through OpenRouter
+
+Choose **OpenRouter** under Config → Decision models → Server to answer `decide`, `jade.decide()`, flow Decide steps and the model router with an OpenRouter model. **Scan** lists the models that report log probabilities (for example `openai/gpt-4o-mini`). The options are lettered A, B, C…, the model answers with one letter, and the probabilities come from that token's log probabilities, normalised over the options; a model that returns none is asked for its probabilities as JSON instead. Up to 26 options. The key field may stay blank to use the OpenRouter key from Model provider. Every decision is a paid request to OpenRouter.
+
 ## Jade's gemstone themes
 
 Open Config → App → Jade companion, or click the gemstone label above the avatar. Choose from ten gemstone palettes—Jade, Ruby, Amethyst, Gold, Sapphire, Diamond, Rose Gold, Emerald, Obsidian, and Quartz—or use **Spectrum** to pick any accent color. **Custom Gradient** lets you choose two colors and a vertical, horizontal, or diagonal blend. Themes recolor Jade's green accents and coordinate the app highlights.
@@ -44,7 +49,7 @@ Under **Customize Jade's appearance**, hair, clothes, stockings, and boots can e
 
 ## Other model settings
 
-Choose context and generation settings conservatively for your model and hardware. Decision models (Ollaya, or Ollama 0.35+ on the same `/v1/systemone` API; Config → Decision models → Server) are a separate classification/decision capability used by `jade.decide()` and flow Decide steps; configure that service before relying on them. Heartbeat can use its own provider/model settings. A separate compaction model can also be selected; choose one suitable for summarizing the same private context as the chat model.
+Choose context and generation settings conservatively for your model and hardware. Decision models (Ollaya, Ollama 0.35+ on the same `/v1/systemone` API, or OpenRouter; Config → Decision models → Server) are a separate classification/decision capability used by `jade.decide()` and flow Decide steps; configure that service before relying on them. Heartbeat can use its own provider/model settings. A separate compaction model can also be selected; choose one suitable for summarizing the same private context as the chat model.
 
 ## Credentials and secrets
 

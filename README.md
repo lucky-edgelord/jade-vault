@@ -6,7 +6,7 @@ schedules, and lives on [Vector](https://vectorapp.io) messenger as your bot and
 
 **Get it:** download the APK from [Releases](../../releases) (Android 7+), or open `jade-vault.html`
 from a release in any modern browser. Point it at Ollama on your computer, or at Ollama Cloud, Groq,
-llama.cpp or any OpenAI-compatible endpoint. On the phone the network is native, so Ollama needs no
+OpenRouter, llama.cpp or any OpenAI-compatible endpoint. On the phone the network is native, so Ollama needs no
 `OLLAMA_ORIGINS`: it only has to listen on an address the phone can reach.
 
 ## Screenshots

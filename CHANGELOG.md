@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.27.0
+
+- **OpenRouter is a model provider.** Config → Model provider → OpenRouter: one key (`sk-or-…`) for hundreds of hosted models (Claude, GPT, Gemini, Llama, Qwen, DeepSeek…). The model list shows the models that can call tools; model ids look like `anthropic/claude-sonnet-4.5`. It works as the main provider, a fallback, the heartbeat and compaction model, and in the model router (`openrouter | anthropic/claude-sonnet-4.5 | hard coding`). OpenRouter's attribution headers are sent, and the key is kept out of exports like the other keys.
+- **Decisions through OpenRouter.** Config → Decision models → Server → OpenRouter: `decide`, scripts' `jade.decide()`, flow Decide steps and the model router can use an OpenRouter model. Scan lists models that report log probabilities. The options are lettered, the model answers with one letter, and the probabilities come from that token's log probabilities (a model without them is asked for probabilities as JSON). The key field may stay blank to use the provider key.
+
 ## 2.26.2
 
 - **Plans:** on a phone the chart showed only its first two tasks (the page squeezed it); it now shows every task.
