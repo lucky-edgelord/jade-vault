@@ -6,6 +6,7 @@ const PROVIDERS = {
   cloud: { label: 'Ollama Cloud', chip: 'OLLAMA CLOUD' },
   groq: { label: 'Groq', chip: 'GROQ' },
   llamacpp: { label: 'llama.cpp', chip: 'LLAMA.CPP' },
+  openrouter: { label: 'OpenRouter', chip: 'OPENROUTER' },
   openai: { label: 'OpenAI-compatible', chip: 'API' },
   aicord: { label: 'AICord', chip: 'AICORD' },
 };
@@ -43,13 +44,13 @@ function toOpenAIMessages(msgs) {
   return out;
 }
 class OpenAICompat {
-  constructor({ base, key, name }) { this.base = String(base || '').replace(/\/+$/, ''); this.key = key; this.name = name; this.ctrls = new Set(); }
-  get headers() { const h = { 'Content-Type': 'application/json' }; if (this.key) h.Authorization = 'Bearer ' + this.key; return h; }
+  constructor({ base, key, name, headers = {} }) { this.base = String(base || '').replace(/\/+$/, ''); this.key = key; this.name = name; this.extra = headers; this.ctrls = new Set(); }
+  get headers() { const h = { 'Content-Type': 'application/json', ...this.extra }; if (this.key) h.Authorization = 'Bearer ' + this.key; return h; }
   abort() { for (const c of this.ctrls) c.abort(); this.ctrls.clear(); }
   async err(r) { let m = `HTTP ${r.status}`; try { const j = await r.json(); m = j.error?.message || j.error || j.message || m; if (j.error?.failed_generation) m += ` (model output: ${String(j.error.failed_generation).slice(0, 200)})`; } catch {} if (r.status === 401) m = `${this.name} rejected the API key (401)`; if (r.status === 429) m = `${this.name} rate limit: ${m}`; return new Error(m); }
   async list() {
     const r = await fetch(this.base + '/models', { headers: this.headers }); if (!r.ok) throw await this.err(r);
-    const j = await r.json(); const ids = (j.data || j.models || []).map(m => m.id || m.name).filter(Boolean)
+    const j = await r.json(); const ids = (j.data || j.models || []).filter(m => !Array.isArray(m.supported_parameters) || m.supported_parameters.includes('tools')).map(m => m.id || m.name).filter(Boolean)   // OpenRouter says which models take tools
       .filter(id => !/whisper|tts|-guard|guard-|playai|orpheus|embed|distil|moderation|dall-e|image|audio|transcri/i.test(id));
     return { models: ids.map(name => ({ name })) };
   }
@@ -163,6 +164,7 @@ function makeClientFor(p, c = S) {
   if (p === 'groq') return new OpenAICompat({ base: 'https://api.groq.com/openai/v1', key: c.groqKey, name: 'Groq' });
   if (p === 'llamacpp') return new OpenAICompat({ base: (c.lcppHost || 'http://localhost:8080').replace(/\/+$/, '').replace(/(\/v1)?$/, '/v1'), key: c.lcppKey, name: 'llama.cpp' });
   if (p === 'aicord') { const old = aicordClient; const c = new AICordClient({ key: c0.aicKey }); if (old && old.key === c.key) c.chars = old.chars; return aicordClient = c; }
+  if (p === 'openrouter') return new OpenAICompat({ base: OR_BASE, key: c.orKey, name: 'OpenRouter', headers: OR_HEADERS });
   if (p === 'openai') return new OpenAICompat({ base: c.oaiHost, key: c.oaiKey, name: (() => { try { return new URL(c.oaiHost).host; } catch { return 'the API'; } })() });
   const host = c.host || DEFAULTS.host; const cl = OllamaLib ? new OllamaLib({ host }) : new FetchOllama({ host }); cl._lib = !!OllamaLib; cl._base = host.replace(/\/+$/, ''); cl.headers = {}; return cl;
 }
@@ -171,6 +173,7 @@ function providerMissing(p, c = S) {
   if (p === 'groq' && !c.groqKey) return 'no Groq API key set (Config → Model provider)';
   if (p === 'llamacpp' && c.lcppHost && !/^https?:\/\//.test(c.lcppHost)) return 'the llama.cpp address must start with http:// or https://';
   if (p === 'aicord' && !c.aicKey) return 'no AICord API key set (Config → Model provider)';
+  if (p === 'openrouter' && !c.orKey) return 'no OpenRouter API key set (Config → Model provider)';
   if (p === 'openai' && !/^https?:\/\//.test(c.oaiHost || '')) return 'no base URL set for the OpenAI-compatible endpoint';
   return '';
 }

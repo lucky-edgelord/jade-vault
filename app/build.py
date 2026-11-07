@@ -2081,6 +2081,33 @@ rep('[hidden]{display:none!important}', '[hidden]{display:none!important}\n' + "
 .aq-add,.aq-set{border:1px solid var(--line);padding:8px;display:flex;flex-direction:column;gap:8px}.aq-add summary,.aq-set summary{cursor:pointer}
 .aq-add[open],.aq-set[open]{gap:8px}.aq-add>*+*,.aq-set>*+*{margin-top:8px}
 .aq-log{font-size:12px;padding:4px 0;border-bottom:1px solid var(--line);word-break:break-word}.aq-log span{color:var(--dim);font-family:var(--f-mono,monospace)}""")
+# ================= v2.27: OpenRouter, as a model provider and as a decision server =================
+s = s.replace('/* =====================================================================\n   BOOT', rd('openrouter.js') + '\n/* =====================================================================\n   BOOT', 1)
+rep("lcppKey: '', aicKey: '',", "lcppKey: '', aicKey: '', orKey: '',")
+rep("'groq', 'openai', 'aicord'],", "'groq', 'openrouter', 'openai', 'aicord'],")
+for _o in ('<option value="openai">OpenAI-compatible endpoint</option>', '<option value="openai">OpenAI-compatible</option>'):
+    assert s.count(_o) >= 1, _o
+    s = s.replace(_o, '<option value="openrouter">OpenRouter</option>' + _o)
+rep("""          <div data-prov="aicord"><label class="lbl" for="sAicKey">""", """          <div data-prov="openrouter"><label class="lbl" for="sOrKey">OpenRouter API key</label><input id="sOrKey" type="password" class="field mt-1" autocomplete="off" placeholder="sk-or-… from openrouter.ai/keys" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+          <div data-prov="aicord"><label class="lbl" for="sAicKey">""")
+rep("  aicord: 'Chat with your AICord", "  openrouter: 'Hundreds of models (Claude, GPT, Gemini, Llama, Qwen, DeepSeek…) behind one key, paid per token. The model list shows the models that can call tools. Model ids look like anthropic/claude-sonnet-4.5. The key stays on this device.',\n  aicord: 'Chat with your AICord")
+rep("S.aicKey = $('#sAicKey').value.trim();", "S.aicKey = $('#sAicKey').value.trim(); S.orKey = $('#sOrKey').value.trim();")
+rep("$('#sAicKey').value = S.aicKey || '';", "$('#sAicKey').value = S.aicKey || ''; $('#sOrKey').value = S.orKey || '';")
+rep("aicKey: $('#sAicKey')?.value.trim() || '',", "aicKey: $('#sAicKey')?.value.trim() || '', orKey: $('#sOrKey')?.value.trim() || '',")
+rep("'vecToken', 'aicKey', 'dcToken',", "'vecToken', 'aicKey', 'orKey', 'dcToken',")
+rep("openai (the OpenAI-compatible endpoint), aicord", "openrouter (model ids like openai/gpt-4o-mini), openai (the OpenAI-compatible endpoint), aicord")
+# decisions through OpenRouter: the same /v1/systemone answers, from a model's log probabilities
+rep("const decName = () => S.decideProv === 'ollama' ? 'Ollama' : 'Ollaya';", "const decName = () => S.decideProv === 'ollama' ? 'Ollama' : S.decideProv === 'openrouter' ? 'OpenRouter' : 'Ollaya';")
+rep("const ollayaBase = () => (S.decideProv === 'ollama' ?", "const ollayaBase = () => S.decideProv === 'openrouter' ? OR_BASE : (S.decideProv === 'ollama' ?")
+rep("async function ollayaFetch(path, init = {}) {", "async function ollayaFetch(path, init = {}) {\n  if (S.decideProv === 'openrouter') return orDecideFetch(path, init);")
+rep('<option value="ollama">Ollama (0.35+)</option></select>', '<option value="ollama">Ollama (0.35+)</option><option value="openrouter">OpenRouter (any model with log probabilities)</option></select>')
+rep("const decDraft = { ollaya: '', ollama: '' };", "const decDraft = { ollaya: '', ollama: '', openrouter: '' };")
+rep("const decAddr = (p, v) => ({", "const decAddr = (p, v) => p === 'openrouter' ? {} : ({")
+rep("$('#sDecideProv').onchange = () => { const other = $('#sDecideProv').value === 'ollama' ? 'ollaya' : 'ollama'; decDraft[other] = $('#sOllayaHost').value.trim(); decFill(); };",
+    "let decPrev = null; $('#sDecideProv').onfocus = () => { decPrev = $('#sDecideProv').value; };\n$('#sDecideProv').onchange = () => { if (decPrev) decDraft[decPrev] = $('#sOllayaHost').value.trim(); decPrev = $('#sDecideProv').value; decFill(); };")
+rep("$('#sOllayaHost').placeholder = p === 'ollama' ?", "$('#sOllayaHost').closest('div').hidden = p === 'openrouter'; $('#sOllayaKey').placeholder = p === 'openrouter' ? 'blank: the OpenRouter key from Model provider' : 'optional'; $('#sOllayaHost').placeholder = p === 'ollama' ?")
+rep("'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b'", "(S.decideProv === 'openrouter' ? 'OpenRouter lists no models with log probabilities right now.' : 'Connected, but no models are pulled yet. Run: ollaya pull winnow:e4b')")
+
 for bad in ['showPreview', 'schedulePreview', 'prevFrame', 'btnPrevBack', 'btnFilePreview', 'btnFileSave', 'inlineAssets']:
     if bad in s: print('WARN leftover', bad, s.count(bad))
 open(os.path.join(DIST, 'jade-vault.html'), 'w').write(s)

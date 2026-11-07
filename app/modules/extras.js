@@ -4,7 +4,7 @@
 // migrate the single fallback from v1.3 to the ordered list
 if (!Array.isArray(S.fallbacks)) S.fallbacks = [];
 if (S.fallback && !S.fallbacks.length) { S.fallbacks = [S.fallback]; delete S.fallback; }
-S.fallbackOrder = [...new Set([...(Array.isArray(S.fallbackOrder) ? S.fallbackOrder : []), ...S.fallbacks, 'local', 'llamacpp', 'cloud', 'groq', 'openai', 'aicord'])].filter(p => PROVIDERS[p]);
+S.fallbackOrder = [...new Set([...(Array.isArray(S.fallbackOrder) ? S.fallbackOrder : []), ...S.fallbacks, 'local', 'llamacpp', 'cloud', 'groq', 'openrouter', 'openai', 'aicord'])].filter(p => PROVIDERS[p]);
 
 /* ---------- fallback list editor (Config → Model provider) ---------- */
 const fbDraft = { order: [], on: new Set() };
