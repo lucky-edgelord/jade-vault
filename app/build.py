@@ -2121,6 +2121,55 @@ rep('[hidden]{display:none!important}', '[hidden]{display:none!important}\n' + "
 .ms-on{color:var(--yl);font-weight:600}
 .ms-use{color:var(--ok,#34d399)}""")
 
+# ================= v2.29.0: Jade as a PNGtuber (the default avatar; Live2D stays an option) =================
+import json as _json, base64 as _b64
+_PT = os.path.join(D, 'avatar', 'pngtuber')
+def _data_url(f, mime): return f'data:{mime};base64,' + _b64.b64encode(open(os.path.join(_PT, f), 'rb').read()).decode()
+rep('<script type="text/plain" id="l2d-tex">', '<script type="application/json" id="png-meta">' + _json.dumps(_json.load(open(os.path.join(_PT, 'faces.json')))) + '</script>\n'
+    + '<script type="text/plain" id="png-body">' + _data_url('body.webp', 'image/webp') + '</script>\n'
+    + '<script type="text/plain" id="png-faces">' + _data_url('faces.webp', 'image/webp') + '</script>\n'
+    + '<script type="text/plain" id="l2d-tex">')
+rep("jadeFrame: 'portrait', jadeTheme: 'jade',", "jadeFrame: 'portrait', jadeAvatar: 'auto', jadeTheme: 'jade',")
+rep("  async function init({ host, onStatus, onSpeak } = {}) {\n", rd('pngtuber.js') + r"""
+  // pick the renderer: the PNGtuber by default, Live2D on request; if Live2D cannot start here, fall back to the PNGtuber
+  async function init(o = {}) {
+    if (avatarKind() === 'png') return initPng(o);
+    try { return await initLive2D(o); }
+    catch (e) {
+      if (!document.getElementById('png-body')) throw e;
+      console.warn('Live2D could not start; using the PNGtuber', e);
+      try { state.app?.destroy?.(true); } catch {}
+      state.app = null; state.model = null;
+      return initPng(o);
+    }
+  }
+  // Settings > Avatar changed (or her colours were customised): swap the renderer in place
+  async function switchAvatar() {
+    const want = avatarKind(); if (!state.host || want === state.kind) return state.kind;
+    const o = { host: state.host, onStatus: state.onStatus, onSpeak: state.onSpeak };
+    try { state.app?.destroy?.(true); } catch {}
+    state.app = null; state.model = null; state.ready = false;
+    await init(o); setFrame(state.frame); try { setTheme(state.theme || 'jade'); } catch {}
+    return state.kind;
+  }
+  async function initLive2D({ host, onStatus, onSpeak } = {}) {
+    state.kind = 'live2d';
+""")
+rep("    new ResizeObserver(() => { app.resize(); layout(); }).observe(host);", "    new ResizeObserver(() => { if (state.app !== app) return; app.resize(); layout(); }).observe(host);")
+rep("const api = { init, setMood, nod, setFrame, setTheme, setAppearance, speak, stop,",
+    "const api = { init, switchAvatar, get kind() { return state.kind; }, setMood, nod, setFrame, setTheme, setAppearance: () => { if (state.kind && avatarKind() !== state.kind) switchAvatar(); else setAppearance(); }, speak, stop,")
+rep('<label class="flex items-center gap-2 text-sm" for="sJadeShow"><input type="checkbox" id="sJadeShow" class="accent-emerald-400 w-4 h-4"> Show the avatar</label>',
+    '<label class="flex items-center gap-2 text-sm" for="sJadeShow"><input type="checkbox" id="sJadeShow" class="accent-emerald-400 w-4 h-4"> Show the avatar</label>\n'
+    '          <div><label class="lbl" for="sJadeAvatar">Avatar</label><select id="sJadeAvatar" class="field mt-1" title="The PNGtuber is light and works everywhere; Live2D moves more and can be recoloured">'
+    '<option value="auto">Automatic (PNGtuber)</option><option value="png">PNGtuber</option><option value="live2d">Live2D</option></select></div>')
+rep("  $('#sJadeShow').checked = S.jadeShow;", "  $('#sJadeShow').checked = S.jadeShow; $('#sJadeAvatar').value = S.jadeAvatar || 'auto';")
+rep("$('#btnHideJade').onclick = () =>", """$('#sJadeAvatar').onchange = async () => {
+  S.jadeAvatar = $('#sJadeAvatar').value; saveSettings();
+  const k = await Jade.switchAvatar().catch(e => { toast(`The avatar could not switch: ${esc(e.message)}`, 'err'); });
+  if (k) { toast(k === 'png' ? 'Jade is a PNGtuber now.' : 'Jade is Live2D now.', 'ok'); $('#jadeDot').className = 'dot ok'; }
+};
+$('#btnHideJade').onclick = () =>""")
+
 for bad in ['showPreview', 'schedulePreview', 'prevFrame', 'btnPrevBack', 'btnFilePreview', 'btnFileSave', 'inlineAssets']:
     if bad in s: print('WARN leftover', bad, s.count(bad))
 open(os.path.join(DIST, 'jade-vault.html'), 'w').write(s)

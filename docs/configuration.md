@@ -51,6 +51,12 @@ Under Config → Model provider → **If it fails, try these in order**, tick an
 
 Model dropdowns with more than eight entries (the header, Model provider, heartbeat, compaction and decision models) open a searchable list: type words in any order to narrow it, tap one to choose it, or **Use** a name that is not listed. Enter picks the only match; Escape closes it.
 
+## Jade's avatar: PNGtuber or Live2D
+
+Config → App → Jade companion → Avatar chooses between **Automatic** (the PNGtuber by default; Live2D when you customise her colours), **PNGtuber** and **Live2D**. The PNGtuber is light, needs no WebGL and animates her moods and speech. See [pngtuber.md](pngtuber.md).
+
+![The Avatar option](screenshots/pngtuber-settings.png)
+
 ## Jade's gemstone themes
 
 Open Config → App → Jade companion, or click the gemstone label above the avatar. Choose from ten gemstone palettes—Jade, Ruby, Amethyst, Gold, Sapphire, Diamond, Rose Gold, Emerald, Obsidian, and Quartz—or use **Spectrum** to pick any accent color. **Custom Gradient** lets you choose two colors and a vertical, horizontal, or diagonal blend. Themes recolor Jade's green accents and coordinate the app highlights.

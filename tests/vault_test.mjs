@@ -298,6 +298,8 @@ ok(ed.users.length === 1 && ed.users[0] === 'Make a map of content, but only for
 ok(sentUser0 === 'Make a map of content, but only for guides', 'resend sent edited text to model');
 await shot('18_after_edit');
 // Jade's appearance can be customized independently, including natural skin tones and per-part gradients.
+// (recolouring needs the Live2D model; the PNGtuber is the default avatar since 2.29)
+await page.evaluate(async () => { S.jadeAvatar = 'live2d'; await Jade.switchAvatar(); });
 await page.tap('#btnTheme'); await page.waitForTimeout(250);
 await page.waitForFunction(() => Jade.state.appearanceTexture, null, { timeout: 30000 });
 ok(await page.locator('#jadeAppearancePicker .jade-appearance-card').count() === 5, 'hair, clothes, stockings, boots, and skin controls are available');

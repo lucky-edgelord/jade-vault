@@ -20,6 +20,7 @@ These guides cover **Jade Vault 2.9.0**. For platform requirements, network acce
 | [Getting started](getting-started.md) | Browser and Android installation, first conversation, offline limits |
 | [Compatibility and limitations](compatibility-and-limitations.md) | Platform requirements, network access, background work, backup coverage |
 | [Configuration and providers](configuration.md) | Ollama, cloud providers, llama.cpp, AICord, fallbacks, secrets |
+| [The PNGtuber avatar](pngtuber.md) | Jade's default avatar, her moods, choosing Live2D, making your own |
 | [Notes and knowledge management](notes.md) | Markdown, links, tags, search, graph, images, attachments |
 | [Jade, memory, and skills](jade-and-memory.md) | Chat, tools, steering files, journal, skills, context management |
 | [Shell and scripting](scripting.md) | BusyBox, JavaScript bridge, MicroPython, SQLite, TensorFlow.js |
