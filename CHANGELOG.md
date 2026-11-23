@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.29.0
+
+- **Jade is a PNGtuber by default.** Her companion is now a layered 2D picture (a body and five expressions of four frames) that blinks, breathes, nods, leans toward your pointer and flaps her mouth to her voice, in about 240 kB with no WebGL. It follows the same moods and speech as before, so tools, voice, the solo screen and the layouts (strip, full, portrait, hidden) work unchanged.
+- **Config → App → Jade companion → Avatar:** Automatic (the PNGtuber, and Live2D if you recolour her parts, or if the PNGtuber cannot start), PNGtuber, or Live2D. It switches at once.
+- `app/tools/make_pngtuber.py` builds the avatar from a folder of PNG frames; `scripts/pngtuber-shots.mjs` takes the docs screenshots and the mood GIF. See `docs/pngtuber.md`.
+- Installs over 2.28.1.
+
 ## 2.28.1
 
 - **Decisions on Ollama Cloud, as Ollama documents them.** Config → Decision models → Server → Ollama Cloud calls `https://ollama.com/v1/systemone` with your Ollama Cloud key. Ollama's format is now spoken properly, for local Ollama too: a choice question's options are named keys (not a list), the winning key comes back as the option's name (as Ollaya answers) with probabilities by option, and a yes/no answer (the probability of true) becomes yes/no with probabilities and a confidence. Scan lists only decision models (`clef`, `clef-flash`…), not chat models. Errors say what to do (401 bad key, 402 needs a paid plan, 404 try clef). 2.28.0's version did none of this, which is why it did not work.
